@@ -77,6 +77,7 @@ class BooksImport implements ToCollection, WithHeadingRow
                     'acquisition_type'      => $row['perolehan'] ?? null,
                     'received_date'         => $receivedDate,
                     'inventory_year'        => $row['tahun'] ?? null,
+                    'description'           => $row['sinopsis'] ?? null,
                 ]);
             }
 
@@ -86,7 +87,11 @@ class BooksImport implements ToCollection, WithHeadingRow
             for ($i = 0; $i < $jmlBuku; $i++) {
                 $copyIndex = BookCopy::where('book_id', $book->id)->count() + 1;
                 $copyCode = 'BK-' . str_pad($book->id, 4, '0', STR_PAD_LEFT) . '-C' . $copyIndex;
-                $barcode = 'BC' . random_int(10000000, 99999999);
+
+                // Generate barcode unik — ulangi jika ternyata sudah ada di database
+                do {
+                    $barcode = 'BC' . random_int(10000000, 99999999);
+                } while (BookCopy::where('barcode', $barcode)->exists());
 
                 BookCopy::create([
                     'book_id'   => $book->id,
