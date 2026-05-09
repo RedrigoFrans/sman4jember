@@ -14,9 +14,9 @@ class BookApiController extends Controller
 
         if ($request->has('q') && !empty($request->q)) {
             $searchTerm = $request->q;
-            $query->where(function($q) use ($searchTerm) {
+            $query->where(function ($q) use ($searchTerm) {
                 $q->where('title', 'like', "%{$searchTerm}%")
-                  ->orWhere('author', 'like', "%{$searchTerm}%");
+                    ->orWhere('author', 'like', "%{$searchTerm}%");
             });
         }
 
@@ -34,7 +34,7 @@ class BookApiController extends Controller
 
         $books = $query->paginate(18);
 
-        $books->getCollection()->transform(function($book) {
+        $books->getCollection()->transform(function ($book) {
             return [
                 'id' => $book->id,
                 'title' => $book->title,
@@ -57,7 +57,7 @@ class BookApiController extends Controller
         $book = \App\Models\Book::with('category', 'copies')
             ->withCount(['copies as available_count' => fn($q) => $q->where('status', 'tersedia')->where('condition', '!=', 'hilang')])
             ->findOrFail($id);
-        
+
         return response()->json([
             'data' => [
                 'id' => $book->id,
@@ -70,6 +70,15 @@ class BookApiController extends Controller
                 'pages' => $book->pages ?? 0,
                 'stock' => $book->available_count,
                 'loan_count' => $book->total_loans ?? 0,
+
+                'copies' => $book->copies->map(function ($copy) {
+                    return [
+                        'copy_code' => $copy->copy_code,
+                        'barcode' => $copy->barcode,
+                        'condition' => $copy->condition,
+                        'status' => $copy->status,
+                    ];
+                }),
             ]
         ]);
     }
