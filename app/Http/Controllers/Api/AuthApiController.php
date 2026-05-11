@@ -6,9 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Member;
 use App\Services\MemberService;
+use App\Mail\OtpMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class AuthApiController extends Controller
@@ -177,6 +181,124 @@ class AuthApiController extends Controller
             'access_token' => $token,
             'token_type' => 'Bearer',
             'user' => $user->load('member.kelas')
+        ]);
+    }
+
+    /**
+     * Forgot Password - Step 1: Kirim OTP ke email
+     */
+    public function forgotSendOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'Email tidak terdaftar di sistem kami.'
+            ], 404);
+        }
+
+        $otp = (string) random_int(100000, 999999);
+
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $request->email],
+            [
+                'token'      => Hash::make($otp),
+                'created_at' => now(),
+            ]
+        );
+
+        Mail::to($user->email)->send(new OtpMail($otp, $user->name));
+
+        return response()->json([
+            'message' => 'Kode OTP telah dikirim ke email Anda.',
+        ]);
+    }
+
+    /**
+     * Forgot Password - Step 2: Verifikasi OTP
+     */
+    public function forgotVerifyOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp'   => 'required|string|size:6',
+        ]);
+
+        $resetRecord = DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->first();
+
+        if (!$resetRecord || !Hash::check($request->otp, $resetRecord->token)) {
+            return response()->json([
+                'message' => 'Kode OTP tidak valid.'
+            ], 422);
+        }
+
+        // Check expiration (10 minutes)
+        $createdAt = \Carbon\Carbon::parse($resetRecord->created_at);
+        if ($createdAt->addMinutes(10)->isPast()) {
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+            return response()->json([
+                'message' => 'Kode OTP sudah kadaluwarsa. Silakan minta kode baru.'
+            ], 422);
+        }
+
+        // Generate reset_token for next step
+        $resetToken = Str::random(60);
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $request->email],
+            [
+                'token'      => Hash::make($resetToken),
+                'created_at' => now(),
+            ]
+        );
+
+        return response()->json([
+            'message'     => 'OTP valid.',
+            'reset_token' => $resetToken,
+        ]);
+    }
+
+    /**
+     * Forgot Password - Step 3: Reset password
+     */
+    public function forgotResetPassword(Request $request)
+    {
+        $request->validate([
+            'email'       => 'required|email',
+            'reset_token' => 'required|string',
+            'password'    => 'required|string|min:6|confirmed',
+        ]);
+
+        $resetRecord = DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->first();
+
+        if (!$resetRecord || !Hash::check($request->reset_token, $resetRecord->token)) {
+            return response()->json([
+                'message' => 'Permintaan reset tidak valid. Ulangi dari awal.'
+            ], 422);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
+            return response()->json([
+                'message' => 'Email pengguna tidak ditemukan.'
+            ], 404);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+        return response()->json([
+            'message' => 'Password berhasil diperbarui. Silakan login dengan password baru.',
         ]);
     }
 }

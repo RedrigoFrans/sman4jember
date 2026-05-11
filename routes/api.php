@@ -21,6 +21,11 @@ Route::prefix('v1')->group(function () {
     Route::post('/auth/claim-lookup',   [AuthApiController::class, 'claimLookup']);
     Route::post('/auth/claim-activate', [AuthApiController::class, 'claimActivate']);
 
+    // Forgot Password (OTP)
+    Route::post('/auth/forgot-password/send-otp',   [AuthApiController::class, 'forgotSendOtp']);
+    Route::post('/auth/forgot-password/verify-otp',  [AuthApiController::class, 'forgotVerifyOtp']);
+    Route::post('/auth/forgot-password/reset',       [AuthApiController::class, 'forgotResetPassword']);
+
     // Katalog buku publik
     Route::get('/books',         [BookApiController::class, 'index']);
     Route::get('/books/{book}',  [BookApiController::class, 'show']);
