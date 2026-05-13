@@ -33,9 +33,13 @@ Route::prefix('v1')->group(function () {
         Route::get('/auth/me',      [AuthApiController::class, 'me']);
 
         // Member profile
-        Route::get('/member/profile',    [MemberApiController::class, 'profile']);
-        Route::put('/member/profile',    [MemberApiController::class, 'updateProfile']);
-        Route::post('/member/fcm-token', [MemberApiController::class, 'storeFcmToken']);
+        Route::get('/member/profile',         [MemberApiController::class, 'profile']);
+        Route::put('/member/profile',         [MemberApiController::class, 'updateProfile']);
+        Route::post('/member/profile/avatar', [MemberApiController::class, 'updateProfile']);
+        Route::post('/member/fcm-token',           [MemberApiController::class, 'storeFcmToken']);
+        Route::post('/member/change-password',      [MemberApiController::class, 'changePassword']);
+        Route::post('/member/send-otp',             [MemberApiController::class, 'sendOtp']);
+        Route::post('/member/reset-password-otp',  [MemberApiController::class, 'resetPasswordWithOtp']);
 
         // Pinjaman
         Route::get('/loans',             [LoanApiController::class, 'index']);
