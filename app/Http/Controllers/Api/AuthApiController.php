@@ -87,6 +87,146 @@ class AuthApiController extends Controller
             'user' => $user->load('member')
         ], 201);
     }
+    public function registerSendOtp(Request $request, FonnteService $fonnte)
+    {
+        $data = $request->validate([
+            'name'     => 'required|string|max:100',
+            'email'    => 'required|email|unique:users,email',
+            'phone'    => ['required', 'string', 'max:20', 'regex:/^(08|628|8)[0-9]{8,13}$/'],
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        $normalizedPhone = $this->normalizeIndonesianPhoneNumber($data['phone']);
+
+        $otp = (string) random_int(100000, 999999);
+
+        $cacheKey = $this->publicRegisterCacheKey($data['email']);
+
+        Cache::put($cacheKey, [
+            'name'          => $data['name'],
+            'email'         => strtolower($data['email']),
+            'phone'         => $normalizedPhone,
+            'password_hash' => Hash::make($data['password']),
+            'otp_hash'      => Hash::make($otp),
+            'attempts'      => 0,
+            'expires_at'    => now()->addMinutes(10)->toDateTimeString(),
+        ], now()->addMinutes(10));
+
+        $message = "Kode OTP pendaftaran e-library Anda adalah: {$otp}. Kode berlaku 10 menit. Jangan berikan kode ini kepada siapa pun.";
+
+        try {
+            $fonnte->sendMessage($normalizedPhone, $message);
+        } catch (\Throwable $e) {
+            Cache::forget($cacheKey);
+
+            return response()->json([
+                'message' => 'Gagal mengirim OTP ke WhatsApp. Silakan coba lagi atau hubungi admin.',
+            ], 500);
+        }
+
+        return response()->json([
+            'message'    => 'Kode OTP pendaftaran telah dikirim ke WhatsApp.',
+            'phone_hint' => $this->maskPhoneNumber($normalizedPhone),
+        ]);
+    }
+
+    public function registerVerifyOtp(Request $request)
+    {
+        $data = $request->validate([
+            'email' => 'required|email',
+            'otp'   => 'required|string|size:6',
+        ]);
+
+        $cacheKey = $this->publicRegisterCacheKey($data['email']);
+        $otpData = Cache::get($cacheKey);
+
+        if (!$otpData) {
+            return response()->json([
+                'message' => 'Kode OTP sudah kadaluwarsa. Silakan daftar ulang.'
+            ], 422);
+        }
+
+        if (strtolower($data['email']) !== strtolower($otpData['email'])) {
+            return response()->json([
+                'message' => 'Email tidak sesuai dengan permintaan pendaftaran.'
+            ], 422);
+        }
+
+        if (now()->greaterThan($otpData['expires_at'])) {
+            Cache::forget($cacheKey);
+
+            return response()->json([
+                'message' => 'Kode OTP sudah kadaluwarsa. Silakan daftar ulang.'
+            ], 422);
+        }
+
+        if (($otpData['attempts'] ?? 0) >= 5) {
+            Cache::forget($cacheKey);
+
+            return response()->json([
+                'message' => 'Percobaan OTP terlalu banyak. Silakan daftar ulang.'
+            ], 429);
+        }
+
+        if (!Hash::check($data['otp'], $otpData['otp_hash'])) {
+            $otpData['attempts'] = ($otpData['attempts'] ?? 0) + 1;
+            Cache::put($cacheKey, $otpData, now()->addMinutes(10));
+
+            return response()->json([
+                'message' => 'Kode OTP tidak valid.'
+            ], 422);
+        }
+
+        if (User::where('email', $otpData['email'])->exists()) {
+            Cache::forget($cacheKey);
+
+            return response()->json([
+                'message' => 'Email sudah digunakan oleh akun lain.'
+            ], 422);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $user = User::create([
+                'name'              => $otpData['name'],
+                'email'             => $otpData['email'],
+                'email_verified_at' => now(),
+                'password'          => $otpData['password_hash'],
+                'role'              => 'anggota',
+            ]);
+
+            $member = Member::create([
+                'user_id'     => $user->id,
+                'name'        => $otpData['name'],
+                'type'        => 'umum',
+                'phone'       => $otpData['phone'],
+                'status'      => 'aktif',
+                'verified_at' => now(),
+            ]);
+
+            $user->assignRole('anggota');
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Registrasi gagal. Silakan coba lagi.',
+            ], 500);
+        }
+
+        Cache::forget($cacheKey);
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'message'      => 'Registrasi berhasil.',
+            'access_token' => $token,
+            'token_type'   => 'Bearer',
+            'user'         => $user->load('member')
+        ], 201);
+    }
 
     /**
      * Dapatkan data user yang login
@@ -440,6 +580,25 @@ class AuthApiController extends Controller
         return 'claim_activation_otp_' . $memberId;
     }
 
+    private function publicRegisterCacheKey(string $email): string
+    {
+        return 'public_register_otp_' . strtolower($email);
+    }
+
+    private function normalizeIndonesianPhoneNumber(string $phone): string
+    {
+        $phone = preg_replace('/\D+/', '', $phone);
+
+        if (str_starts_with($phone, '0')) {
+            return '62' . substr($phone, 1);
+        }
+
+        if (str_starts_with($phone, '8')) {
+            return '62' . $phone;
+        }
+
+        return $phone;
+    }
     private function maskPhoneNumber(?string $phone): ?string
     {
         if (!$phone) {

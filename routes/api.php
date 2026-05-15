@@ -18,6 +18,8 @@ Route::prefix('v1')->group(function () {
     // Auth
     Route::post('/auth/login',          [AuthApiController::class, 'login']);
     Route::post('/auth/register',       [AuthApiController::class, 'register']);
+    Route::post('/auth/register/send-otp',   [AuthApiController::class, 'registerSendOtp']);
+    Route::post('/auth/register/verify-otp', [AuthApiController::class, 'registerVerifyOtp']);
     Route::post('/auth/claim-lookup',               [AuthApiController::class, 'claimLookup']);
     Route::post('/auth/claim-activate',             [AuthApiController::class, 'claimActivate']);
     Route::post('/auth/claim-activate/send-otp',    [AuthApiController::class, 'claimActivateSendOtp']);
