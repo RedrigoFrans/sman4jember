@@ -18,8 +18,10 @@ Route::prefix('v1')->group(function () {
     // Auth
     Route::post('/auth/login',          [AuthApiController::class, 'login']);
     Route::post('/auth/register',       [AuthApiController::class, 'register']);
-    Route::post('/auth/claim-lookup',   [AuthApiController::class, 'claimLookup']);
-    Route::post('/auth/claim-activate', [AuthApiController::class, 'claimActivate']);
+    Route::post('/auth/claim-lookup',               [AuthApiController::class, 'claimLookup']);
+    Route::post('/auth/claim-activate',             [AuthApiController::class, 'claimActivate']);
+    Route::post('/auth/claim-activate/send-otp',    [AuthApiController::class, 'claimActivateSendOtp']);
+    Route::post('/auth/claim-activate/verify-otp',  [AuthApiController::class, 'claimActivateVerifyOtp']);
 
     // Forgot Password (OTP)
     Route::post('/auth/forgot-password/send-otp',   [AuthApiController::class, 'forgotSendOtp']);
@@ -75,7 +77,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/reading-progress', [ReadingProgressController::class, 'index']);
         Route::get('/reading-progress/{ebookId}', [ReadingProgressController::class, 'get']);
         Route::post('/reading-progress/update', [ReadingProgressController::class, 'update']);
-        
+
         Route::prefix('chatbot')->group(function () {
             Route::get('/conversations',              [ChatbotApiController::class, 'conversations']);
             Route::post('/conversations',             [ChatbotApiController::class, 'createConversation']);
