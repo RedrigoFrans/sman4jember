@@ -22,7 +22,7 @@
           <!-- Body -->
           <tr>
             <td style="padding:36px 40px;">
-              <p style="margin:0 0 6px; font-size:16px; color:#1E1E1E; font-weight:600;">Halo, {{ $user->name }}!</p>
+              <p style="margin:0 0 6px; font-size:16px; color:#1E1E1E; font-weight:600;">Halo, {{ $name }}!</p>
               <p style="margin:0 0 28px; font-size:14px; color:#6B7280; line-height:1.6;">
                 Kami menerima permintaan untuk mengubah password akun Anda. Gunakan kode OTP di bawah ini:
               </p>
