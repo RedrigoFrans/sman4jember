@@ -21,7 +21,20 @@ class MemberService
             default => 'UMU',
         };
         $year  = now()->year;
-        $count = Member::whereYear('created_at', $year)->count() + 1;
+        
+        $latestMember = Member::whereYear('created_at', $year)
+            ->orderBy('id', 'desc')
+            ->first();
+
+        $count = 1;
+        if ($latestMember && $latestMember->member_code) {
+            $parts = explode('-', $latestMember->member_code);
+            if (count($parts) === 3 && is_numeric($parts[2])) {
+                $count = (int) $parts[2] + 1;
+            } else {
+                $count = Member::whereYear('created_at', $year)->count() + 1;
+            }
+        }
 
         return sprintf('%s-%s-%03d', $prefix, $year, $count);
     }
