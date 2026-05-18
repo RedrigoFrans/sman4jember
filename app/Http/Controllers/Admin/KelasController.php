@@ -35,7 +35,7 @@ class KelasController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        $data['grade'] = $data['grade'] ?? 0;
+        $data['grade'] = $this->parseGrade($data['grade'] ?? '');
         $data['major'] = $data['major'] ?? '';
 
         Kelas::create($data);
@@ -52,7 +52,7 @@ class KelasController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        $data['grade'] = $data['grade'] ?? 0;
+        $data['grade'] = $this->parseGrade($data['grade'] ?? '');
         $data['major'] = $data['major'] ?? '';
 
         $kela->update($data);
@@ -68,5 +68,36 @@ class KelasController extends Controller
 
         $kela->delete();
         return back()->with('success', 'Kelas berhasil dihapus.');
+    }
+
+    private function parseGrade($grade)
+    {
+        if (empty($grade)) return 0;
+        if (is_numeric($grade)) return (int) $grade;
+
+        $romans = [
+            'I' => 1, 'V' => 5, 'X' => 10, 'L' => 50,
+            'C' => 100, 'D' => 500, 'M' => 1000,
+        ];
+
+        $roman = strtoupper(trim($grade));
+        $result = 0;
+
+        for ($i = 0; $i < strlen($roman); $i++) {
+            $char = $roman[$i];
+            if (!isset($romans[$char])) {
+                return 0; // Invalid roman character
+            }
+            $current = $romans[$char];
+            $next = ($i + 1 < strlen($roman)) ? ($romans[$roman[$i + 1]] ?? 0) : 0;
+
+            if ($current < $next) {
+                $result -= $current;
+            } else {
+                $result += $current;
+            }
+        }
+
+        return $result;
     }
 }
