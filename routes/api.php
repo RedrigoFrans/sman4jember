@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\EbookApiController;
 use App\Http\Controllers\Api\VisitApiController;
 use App\Http\Controllers\Api\ReadingProgressController;
 use App\Http\Controllers\Api\ChatbotApiController;
+use App\Http\Controllers\Api\BookCollectionApiController;
 
 // ─── Public API (tanpa auth) ──────────────────────────────────────
 Route::prefix('v1')->group(function () {
@@ -34,6 +35,11 @@ Route::prefix('v1')->group(function () {
     Route::get('/books',         [BookApiController::class, 'index']);
     Route::get('/books/{book}',  [BookApiController::class, 'show']);
 
+
+    Route::get('/book-collections', [BookCollectionApiController::class, 'index']);
+    Route::post('/book-collections', [BookCollectionApiController::class, 'store']);
+    Route::delete('/book-collections/{book_id}', [BookCollectionApiController::class, 'destroy']);
+    Route::get('/book-collections/check/{book_id}', [BookCollectionApiController::class, 'check']);
     // ─── Auth required ────────────────────────────────────────────
     Route::middleware('auth:sanctum')->group(function () {
 
