@@ -39,6 +39,10 @@ class HandleInertiaRequests extends Middleware
                 'warning' => session('warning'),
                 'info'    => session('info'),
                 'reset_token' => session('reset_token'),
+                'otp_sent'   => session('otp_sent'),
+                'otp_email'  => session('otp_email'),
+                'phone_hint' => session('phone_hint'),
+                'email_hint' => session('email_hint'),
             ],
         ];
     }

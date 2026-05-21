@@ -1,120 +1,231 @@
 <template>
   <AuthLayout>
-    <!-- Back link + Title -->
-    <div class="mb-7">
-      <Link :href="route('home')"
-        class="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors mb-5">
-        <svg width="14" height="14" fill="none" viewBox="0 0 24 24">
-          <path d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        Kembali ke Beranda
-      </Link>
-      <h1 class="text-gray-900 text-2xl font-bold">Daftar Anggota</h1>
-      <p class="text-gray-500 text-sm mt-1">Buat akun perpustakaan sebagai anggota umum</p>
-    </div>
+    <div class="glass-card rounded-2xl p-8 md:p-10">
+      
+      <!-- ══════════════════════════════════════════════════ -->
+      <!-- STEP 1: Form Pendaftaran                           -->
+      <!-- ══════════════════════════════════════════════════ -->
+      <div v-if="step === 1">
+        <Link :href="route('login')" class="flex items-center gap-2 text-on-surface-variant hover:text-primary mb-6 transition-colors w-fit">
+          <span class="material-symbols-outlined">arrow_back</span>
+          <span class="text-sm font-medium">Kembali</span>
+        </Link>
+        
+        <h2 class="font-headline-md text-primary text-2xl mb-2">Daftar Akun</h2>
+        <p class="text-on-surface-variant mb-8">Lengkapi data diri Anda untuk memulai.</p>
+        
+        <div class="bg-primary-container/10 border border-primary-container/20 p-4 rounded-xl flex items-start gap-3 mb-8">
+          <span class="material-symbols-outlined text-primary mt-0.5">info</span>
+          <p class="text-xs text-on-primary-container leading-relaxed">
+            Kode OTP akan dikirim ke <strong>Email</strong> yang Anda masukkan. Pastikan email aktif.
+          </p>
+        </div>
 
-    <form @submit.prevent="submit" class="space-y-4">
+        <form @submit.prevent="submitRegister" class="space-y-5">
+          <!-- Nama -->
+          <div>
+            <label class="block text-sm font-semibold mb-1 text-primary">Nama Lengkap <span class="text-error">*</span></label>
+            <input v-model="form.name" type="text"
+              class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+              placeholder="John Doe" autocomplete="name" required />
+            <p v-if="form.errors.name" class="text-error text-xs mt-1">{{ form.errors.name }}</p>
+          </div>
 
-      <!-- Nama -->
-      <div class="space-y-1.5">
-        <label class="block text-xs font-semibold tracking-widest text-gray-500 uppercase">Nama Lengkap <span class="text-red-400">*</span></label>
-        <input v-model="form.name" type="text"
-          class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 bg-gray-50 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10"
-          placeholder="Ahmad Firdaus" autocomplete="name" />
-        <p v-if="form.errors.name" class="text-red-500 text-xs">{{ form.errors.name }}</p>
+          <!-- Email & WA -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold mb-1 text-primary">Alamat Email <span class="text-error">*</span></label>
+              <input v-model="form.email" type="email"
+                class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                placeholder="email@contoh.com" autocomplete="email" required />
+              <p v-if="form.errors.email" class="text-error text-xs mt-1">{{ form.errors.email }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-1 text-primary">No. WhatsApp <span class="text-outline font-normal">(Opsional)</span></label>
+              <input v-model="form.phone" type="tel"
+                class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                placeholder="081234567890" />
+              <p v-if="form.errors.phone" class="text-error text-xs mt-1">{{ form.errors.phone }}</p>
+            </div>
+          </div>
+
+          <!-- Password & Konfirmasi -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="relative">
+              <label class="block text-sm font-semibold mb-1 text-primary">Kata Sandi <span class="text-error">*</span></label>
+              <input v-model="form.password" :type="showPass ? 'text' : 'password'"
+                class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                placeholder="••••••••" autocomplete="new-password" required />
+              <button type="button" @click="showPass = !showPass" class="absolute right-4 top-9 text-on-surface-variant hover:text-primary">
+                <span class="material-symbols-outlined">{{ showPass ? 'visibility_off' : 'visibility' }}</span>
+              </button>
+              <p v-if="form.errors.password" class="text-error text-xs mt-1">{{ form.errors.password }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-1 text-primary">Konfirmasi <span class="text-error">*</span></label>
+              <input v-model="form.password_confirmation" :type="showPass ? 'text' : 'password'"
+                class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                placeholder="Ulangi password" autocomplete="new-password" required />
+            </div>
+          </div>
+
+          <button type="submit" :disabled="form.processing"
+            class="w-full flex justify-center items-center gap-2 bg-primary text-white py-4 rounded-xl font-bold mt-4 hover:bg-primary/90 transition-all shadow-lg shadow-primary/10 disabled:opacity-70">
+            <span v-if="form.processing" class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+            {{ form.processing ? 'Mengirim OTP...' : 'Daftar & Kirim OTP' }}
+          </button>
+        </form>
       </div>
 
-      <!-- Email + HP -->
-      <div class="grid grid-cols-2 gap-3">
-        <div class="space-y-1.5">
-          <label class="block text-xs font-semibold tracking-widest text-gray-500 uppercase">Email <span class="text-red-400">*</span></label>
-          <input v-model="form.email" type="email"
-            class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 bg-gray-50 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10"
-            placeholder="email@contoh.com" autocomplete="email" />
-          <p v-if="form.errors.email" class="text-red-500 text-xs">{{ form.errors.email }}</p>
+      <!-- ══════════════════════════════════════════════════ -->
+      <!-- STEP 2: Verifikasi OTP Email                       -->
+      <!-- ══════════════════════════════════════════════════ -->
+      <div v-else>
+        <div class="mb-8 text-center">
+          <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center bg-primary-container/10 border border-primary-container/20">
+            <span class="material-symbols-outlined text-primary text-3xl">mark_email_read</span>
+          </div>
+          <h2 class="font-headline-md text-primary text-2xl mb-2">Verifikasi Email</h2>
+          <p class="text-on-surface-variant">
+            Masukkan 6 digit kode yang dikirim ke <br>
+            <span class="font-bold text-primary">{{ emailHint }}</span>
+          </p>
         </div>
-        <div class="space-y-1.5">
-          <label class="block text-xs font-semibold tracking-widest text-gray-500 uppercase">No. HP</label>
-          <input v-model="form.phone" type="tel"
-            class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 bg-gray-50 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10"
-            placeholder="08xxxxxxxxxx" />
-        </div>
-      </div>
 
-      <!-- Password -->
-      <div class="grid grid-cols-2 gap-3">
-        <div class="space-y-1.5">
-          <label class="block text-xs font-semibold tracking-widest text-gray-500 uppercase">Password <span class="text-red-400">*</span></label>
-          <div class="relative">
-            <input v-model="form.password" :type="showPass ? 'text' : 'password'"
-              class="w-full pl-4 pr-9 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 bg-gray-50 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10"
-              placeholder="Min. 6 karakter" autocomplete="new-password" />
-            <button type="button" @click="showPass = !showPass"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
-              <svg v-if="showPass" width="14" height="14" fill="none" viewBox="0 0 24 24">
-                <path d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <svg v-else width="14" height="14" fill="none" viewBox="0 0 24 24">
-                <path d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
+        <form @submit.prevent="submitOtp" class="space-y-6">
+          <div>
+            <div class="flex justify-between gap-2 md:gap-3 mb-2">
+              <input
+                v-for="(_, i) in otpDigits"
+                :key="i"
+                :ref="el => { if (el) otpRefs[i] = el }"
+                v-model="otpDigits[i]"
+                type="text"
+                inputmode="numeric"
+                maxlength="1"
+                class="w-12 h-14 md:w-14 md:h-16 text-center text-2xl font-bold rounded-xl border-2 transition-all bg-white text-primary"
+                :class="otpDigits[i] ? 'border-primary ring-2 ring-primary/20' : 'border-outline-variant focus:border-primary focus:ring-0'"
+                @input="onOtpInput(i, $event)"
+                @keydown="onOtpKeydown(i, $event)"
+                @paste="onOtpPaste($event)"
+              />
+            </div>
+            <p v-if="otpForm.errors.otp" class="text-error text-xs text-center mt-2">{{ otpForm.errors.otp }}</p>
+          </div>
+
+          <div class="text-center">
+            <p class="text-sm text-on-surface-variant mb-1">Kode berlaku 10 menit.</p>
+          </div>
+
+          <button type="submit" :disabled="otpForm.processing || otpCode.length < 6"
+            class="w-full flex justify-center items-center gap-2 bg-primary text-white py-4 rounded-xl font-bold text-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/10 disabled:opacity-70">
+            <span v-if="otpForm.processing" class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+            {{ otpForm.processing ? 'Memverifikasi...' : 'Verifikasi Akun' }}
+          </button>
+          
+          <div class="flex flex-col gap-3 mt-4">
+            <button type="button" @click="resendOtp" :disabled="resending"
+              class="w-full text-primary font-bold text-sm hover:underline disabled:opacity-50">
+              {{ resending ? 'Mengirim...' : 'Kirim Ulang Kode' }}
+            </button>
+            <button type="button" @click="step = 1"
+              class="w-full text-outline font-medium text-sm hover:text-primary transition-colors">
+              &larr; Ubah data pendaftaran
             </button>
           </div>
-          <p v-if="form.errors.password" class="text-red-500 text-xs">{{ form.errors.password }}</p>
-        </div>
-        <div class="space-y-1.5">
-          <label class="block text-xs font-semibold tracking-widest text-gray-500 uppercase">Konfirmasi <span class="text-red-400">*</span></label>
-          <input v-model="form.password_confirmation" :type="showPass ? 'text' : 'password'"
-            class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 bg-gray-50 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10"
-            placeholder="Ulangi password" autocomplete="new-password" />
-        </div>
+        </form>
       </div>
 
-
-      <!-- Submit -->
-      <button type="submit" :disabled="form.processing"
-        class="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white text-sm font-bold tracking-wide transition-all disabled:opacity-60 disabled:cursor-not-allowed mt-1"
-        style="background: linear-gradient(135deg, #1a6b5a, #25a07e)">
-        <span v-if="form.processing" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-        {{ form.processing ? 'Mendaftar...' : 'Daftar Sekarang' }}
-        <svg v-if="!form.processing" width="15" height="15" fill="none" viewBox="0 0 24 24">
-          <path d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-    </form>
-
-    <!-- Divider + Links -->
-    <div class="mt-6 space-y-3">
-      <div class="relative flex items-center gap-3">
-        <div class="flex-1 h-px bg-gray-100"></div>
-        <span class="text-xs font-semibold tracking-widest text-gray-400 uppercase">Atau</span>
-        <div class="flex-1 h-px bg-gray-100"></div>
-      </div>
-      <p class="text-center text-sm text-gray-500">
-        Siswa / Guru?
-        <Link :href="route('claim.show')" class="font-semibold text-emerald-700 hover:text-emerald-800 transition-colors">Aktivasi akun dengan NIS/NIP →</Link>
-      </p>
-      <p class="text-center text-sm text-gray-500">
-        Sudah punya akun?
-        <Link :href="route('login')" class="font-semibold text-emerald-700 hover:text-emerald-800 transition-colors">Masuk →</Link>
-      </p>
     </div>
   </AuthLayout>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { Link, useForm } from '@inertiajs/vue3'
 import AuthLayout from '@/Layouts/AuthLayout.vue'
 
-const showPass = ref(false)
-
-const form = useForm({
-  name: '', email: '', password: '',
-  password_confirmation: '', phone: '',
+const props = defineProps({
+  flash: { type: Object, default: () => ({}) },
 })
 
-function submit() {
-  form.post(route('register'))
+const step = ref(1)
+const showPass = ref(false)
+const emailHint = ref('')
+const resending = ref(false)
+
+// ── Step 1: Register Form ────────────────────────────────────
+const form = useForm({
+  name: '', email: '', phone: '',
+  password: '', password_confirmation: '',
+})
+
+function submitRegister() {
+  form.post(route('register.send-otp'), {
+    preserveState: true,
+    preserveScroll: true,
+    onSuccess: (page) => {
+      if (page.props.flash?.otp_sent) {
+        emailHint.value = page.props.flash.email_hint ?? ''
+        otpForm.email = form.email
+        step.value = 2
+        nextTick(() => { if (otpRefs.value[0]) otpRefs.value[0].focus() })
+      }
+    },
+  })
+}
+
+// ── Step 2: OTP Form ─────────────────────────────────────────
+const otpDigits = ref(['', '', '', '', '', ''])
+const otpRefs = ref([])
+const otpForm = useForm({ email: '', otp: '' })
+
+const otpCode = computed(() => otpDigits.value.join(''))
+
+function onOtpInput(index, event) {
+  const val = event.target.value.replace(/\D/g, '')
+  otpDigits.value[index] = val ? val[val.length - 1] : ''
+  if (val && index < 5) nextTick(() => otpRefs.value[index + 1]?.focus())
+}
+
+function onOtpKeydown(index, event) {
+  if (event.key === 'Backspace' && !otpDigits.value[index] && index > 0) {
+    nextTick(() => otpRefs.value[index - 1]?.focus())
+  }
+}
+
+function onOtpPaste(event) {
+  const pasted = (event.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6)
+  if (!pasted) return
+  event.preventDefault()
+  pasted.split('').forEach((char, i) => { otpDigits.value[i] = char })
+  nextTick(() => otpRefs.value[Math.min(pasted.length, 5)]?.focus())
+}
+
+function submitOtp() {
+  otpForm.otp = otpCode.value
+  otpForm.post(route('register.verify-otp'), {
+    preserveState: true,
+    preserveScroll: true,
+    onError: () => {
+      otpDigits.value = ['', '', '', '', '', '']
+      nextTick(() => otpRefs.value[0]?.focus())
+    },
+  })
+}
+
+async function resendOtp() {
+  resending.value = true
+  form.post(route('register.send-otp'), {
+    preserveState: true,
+    preserveScroll: true,
+    onFinish: () => { resending.value = false },
+    onSuccess: (page) => {
+      if (page.props.flash?.otp_sent) {
+        otpDigits.value = ['', '', '', '', '', '']
+        nextTick(() => otpRefs.value[0]?.focus())
+      }
+    },
+  })
 }
 </script>

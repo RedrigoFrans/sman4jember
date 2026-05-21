@@ -30,6 +30,10 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class , 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class , 'register']);
 
+    // Register OTP (WhatsApp)
+    Route::post('/register/send-otp',   [AuthController::class, 'registerSendOtp'])->name('register.send-otp');
+    Route::post('/register/verify-otp', [AuthController::class, 'registerVerifyOtp'])->name('register.verify-otp');
+
     // Lupa Password (OTP)
     Route::get('/forgot-password', [ForgotPasswordController::class, 'show'])->name('password.request');
     Route::post('/forgot-password/send-otp', [ForgotPasswordController::class, 'sendOtp'])->name('password.email');
@@ -40,6 +44,11 @@ Route::middleware('guest')->group(function () {
     Route::get('/claim-account', [AuthController::class , 'showClaim'])->name('claim.show');
     Route::post('/claim-account/lookup', [AuthController::class , 'claimLookup'])->name('claim.lookup');
     Route::post('/claim-account/activate', [AuthController::class , 'claimActivate'])->name('claim.activate');
+
+    // Claim Aktivasi OTP (Email)
+    Route::post('/claim-account/send-otp',   [AuthController::class, 'claimActivateSendOtp'])->name('claim.send-otp');
+    Route::post('/claim-account/verify-otp', [AuthController::class, 'claimActivateVerifyOtp'])->name('claim.verify-otp');
+    Route::post('/claim-account/reset',      [AuthController::class, 'claimReset'])->name('claim.reset');
 });
 
 // ─── Auth Routes ──────────────────────────────────────────────────────────

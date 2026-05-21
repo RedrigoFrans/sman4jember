@@ -57,7 +57,9 @@ class MemberService
      */
     public function register(User $user, array $data): Member
     {
-        $isPending = ($data['type'] === 'umum');
+        // status_override: 'aktif' jika sudah verifikasi OTP WA, else cek tipe
+        $statusOverride = $data['status_override'] ?? null;
+        $isPending = ($statusOverride !== 'aktif') && ($data['type'] === 'umum');
 
         return DB::transaction(function () use ($user, $data, $isPending) {
             $member = Member::create([
