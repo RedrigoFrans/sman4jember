@@ -143,10 +143,16 @@ function toggleScanner(id) {
   showScanner.value = showScanner.value === id ? '' : id
 }
 
-function focusBookInput() {
-  nextTick(() => {
+async function focusBookInput() {
+  await nextTick()
+  if (bookBarcodeInput.value) {
+    bookBarcodeInput.value.focus()
+    bookBarcodeInput.value.select()
+  }
+  // Fallback timeout untuk memastikan focus setelah re-render
+  setTimeout(() => {
     if (bookBarcodeInput.value) bookBarcodeInput.value.focus()
-  })
+  }, 80)
 }
 
 const pinjam = reactive({
@@ -173,24 +179,42 @@ async function pinjamValidateMember() {
 }
 
 async function pinjamAddBook() {
-  if (!pinjam.barcode || pinjam.books.length >= pinjam.quota) return
-  pinjam.bookLoading = true; pinjam.bookError = ''
+  // Guard: jangan proses jika barcode kosong, kuota habis, atau sedang loading
+  if (!pinjam.barcode || pinjam.books.length >= pinjam.quota || pinjam.bookLoading) return
+  const scannedBarcode = pinjam.barcode
+  pinjam.bookLoading = true
+  pinjam.bookError = ''
   try {
-    const res = await axios.post(route('loans.validate-book'), { barcode: pinjam.barcode })
+    const res = await axios.post(route('loans.validate-book'), { barcode: scannedBarcode })
     if (res.data.valid) {
-      if (pinjam.books.find(b => b.barcode === res.data.copy.barcode)) { pinjam.bookError = 'Buku ini sudah ditambahkan.' }
-      else { pinjam.books.push(res.data.copy) }
-    } else { pinjam.bookError = res.data.message }
+      const copy = res.data.copy
+      // Cek duplikat berdasarkan barcode ATAU copy_code
+      const isDup = pinjam.books.find(b => b.id === copy.id)
+      if (isDup) {
+        pinjam.bookError = 'Buku ini sudah ditambahkan.'
+      } else {
+        pinjam.books.push(copy)
+        pinjam.bookError = ''
+      }
+    } else {
+      pinjam.bookError = res.data.message
+    }
+  } catch (e) {
+    pinjam.bookError = e.response?.data?.message || 'Buku tidak ditemukan.'
+  } finally {
     pinjam.barcode = ''
+    pinjam.bookLoading = false
+    // Selalu kembalikan focus ke input barcode agar scanner bisa langsung scan berikutnya
     focusBookInput()
-  } catch (e) { pinjam.bookError = e.response?.data?.message || 'Buku tidak ditemukan.' }
-  finally { pinjam.bookLoading = false }
+  }
 }
 
 function pinjamSubmit() {
   pinjam.submitting = true
+  // Gunakan barcode jika ada, fallback ke copy_code
+  const barcodes = pinjam.books.map(b => b.barcode || b.copy_code)
   router.post(route('loans.store'), {
-    member_code: pinjam.memberCode, barcodes: pinjam.books.map(b => b.barcode), loan_type: pinjam.loanType,
+    member_code: pinjam.memberCode, barcodes, loan_type: pinjam.loanType,
   }, { onFinish: () => { pinjam.submitting = false } })
 }
 </script>
