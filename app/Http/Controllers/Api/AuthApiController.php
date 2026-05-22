@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Member;
 use App\Services\MemberService;
 use App\Mail\OtpMail;
+use App\Mail\AccountVerificationMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -109,7 +110,9 @@ class AuthApiController extends Controller
         ], now()->addMinutes(10));
 
         try {
-            Mail::to($data['email'])->send(new OtpMail($otp, $data['name']));
+            Mail::to($data['email'])->send(
+                new AccountVerificationMail($otp, $data['name'], 'register')
+            );
         } catch (\Throwable $e) {
             Cache::forget($cacheKey);
 
@@ -326,7 +329,9 @@ class AuthApiController extends Controller
             'expires_at'    => now()->addMinutes(10)->toDateTimeString(),
         ], now()->addMinutes(10));
 
-        Mail::to($data['email'])->send(new OtpMail($otp, $member->name));
+        Mail::to($data['email'])->send(
+            new AccountVerificationMail($otp, $member->name, 'activate')
+        );
 
         return response()->json([
             'message' => 'Kode OTP aktivasi telah dikirim ke email Anda.',
