@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class EbookApiController extends Controller
@@ -16,21 +17,42 @@ class EbookApiController extends Controller
         $page = max(1, (int) $request->query('page', 1));
 
         $books = collect();
+        $failedSources = [];
 
-        if ($source === 'all' || $source === 'internet_archive') {
-            $books = $books->merge($this->searchInternetArchive($query, $page));
-        }
+        $sources = [
+            'internet_archive' => function () use ($query, $page) {
+                return $this->searchInternetArchive($query, $page);
+            },
+            'google_books' => function () use ($query) {
+                return $this->searchGoogleBooks($query);
+            },
+            'gutendex' => function () use ($query) {
+                return $this->searchGutendex($query);
+            },
+            'open_library' => function () use ($query) {
+                return $this->searchOpenLibrary($query);
+            },
+        ];
 
-        if ($source === 'all' || $source === 'google_books') {
-            $books = $books->merge($this->searchGoogleBooks($query));
-        }
+        foreach ($sources as $sourceName => $callback) {
+            if ($source !== 'all' && $source !== $sourceName) {
+                continue;
+            }
 
-        if ($source === 'all' || $source === 'gutendex') {
-            $books = $books->merge($this->searchGutendex($query));
-        }
+            try {
+                $books = $books->merge($callback());
+            } catch (\Throwable $e) {
+                $failedSources[] = $sourceName;
 
-        if ($source === 'all' || $source === 'open_library') {
-            $books = $books->merge($this->searchOpenLibrary($query));
+                Log::warning('Sumber ebook gagal diakses', [
+                    'source' => $sourceName,
+                    'query' => $query,
+                    'message' => $e->getMessage(),
+                ]);
+
+                // Jangan hentikan semua data hanya karena 1 API luar timeout.
+                continue;
+            }
         }
 
         $books = $books
@@ -44,10 +66,14 @@ class EbookApiController extends Controller
 
         return response()->json([
             'status' => 200,
-            'message' => 'Berhasil mengambil data ebook',
+            'message' => empty($failedSources)
+                ? 'Berhasil mengambil data ebook'
+                : 'Berhasil mengambil data ebook, beberapa sumber sedang lambat',
+            'failed_sources' => $failedSources,
             'data' => $books,
         ]);
     }
+
     private function searchInternetArchive(string $query, int $page)
     {
         if ($query === '') {
@@ -56,7 +82,7 @@ class EbookApiController extends Controller
             $iaQuery = "({$query}) AND mediatype:texts AND NOT collection:inlibrary AND NOT collection:printdisabled";
         }
 
-        $response = Http::timeout(25)->get('https://archive.org/advancedsearch.php', [
+        $response = Http::connectTimeout(5)->timeout(15)->retry(2, 300)->get('https://archive.org/advancedsearch.php', [
             'q' => $iaQuery,
             'output' => 'json',
             'rows' => 50,
@@ -122,7 +148,7 @@ class EbookApiController extends Controller
         // Kalau nanti kamu punya API key Google Books, bisa aktifkan ini:
         // $params['key'] = env('GOOGLE_BOOKS_API_KEY');
 
-        $response = Http::timeout(20)->get('https://www.googleapis.com/books/v1/volumes', $params);
+        $response = Http::connectTimeout(5)->timeout(10)->retry(2, 300)->get('https://www.googleapis.com/books/v1/volumes', $params);
 
         if (!$response->successful()) {
             return collect([]);
@@ -176,7 +202,7 @@ class EbookApiController extends Controller
 
     private function searchGutendex(string $query)
     {
-        $response = Http::timeout(20)->get('https://gutendex.com/books', [
+        $response = Http::connectTimeout(5)->timeout(8)->retry(2, 300)->get('https://gutendex.com/books', [
             'search' => $query === '' ? 'book' : $query,
         ]);
 
@@ -233,7 +259,7 @@ class EbookApiController extends Controller
 
     private function searchOpenLibrary(string $query)
     {
-        $response = Http::timeout(20)->get('https://openlibrary.org/search.json', [
+        $response = Http::connectTimeout(5)->timeout(10)->retry(2, 300)->get('https://openlibrary.org/search.json', [
             'q' => $query === '' ? 'book' : $query,
             'limit' => 30,
         ]);
@@ -319,32 +345,46 @@ class EbookApiController extends Controller
 
     public function show($source, $externalId)
     {
-        if ($source === 'internet_archive') {
-            return $this->showInternetArchive($externalId);
-        }
+        try {
+            if ($source === 'internet_archive') {
+                return $this->showInternetArchive($externalId);
+            }
 
-        if ($source === 'google_books') {
-            return $this->showGoogleBooks($externalId);
-        }
+            if ($source === 'google_books') {
+                return $this->showGoogleBooks($externalId);
+            }
 
-        if ($source === 'gutendex') {
-            return $this->showGutendex($externalId);
-        }
+            if ($source === 'gutendex') {
+                return $this->showGutendex($externalId);
+            }
 
-        if ($source === 'open_library') {
-            return $this->showOpenLibrary($externalId);
-        }
+            if ($source === 'open_library') {
+                return $this->showOpenLibrary($externalId);
+            }
 
-        return response()->json([
-            'status' => 404,
-            'message' => 'Source ebook tidak dikenali',
-            'data' => null,
-        ], 404);
+            return response()->json([
+                'status' => 404,
+                'message' => 'Source ebook tidak dikenali',
+                'data' => null,
+            ], 404);
+        } catch (\Throwable $e) {
+            Log::warning('Detail ebook gagal diakses', [
+                'source' => $source,
+                'external_id' => $externalId,
+                'message' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'status' => 503,
+                'message' => 'Sumber e-book sedang lambat atau tidak bisa diakses. Coba lagi beberapa saat.',
+                'data' => null,
+            ], 503);
+        }
     }
 
     private function showInternetArchive($externalId)
     {
-        $response = Http::timeout(25)->get("https://archive.org/metadata/{$externalId}");
+        $response = Http::connectTimeout(5)->timeout(15)->retry(2, 300)->get("https://archive.org/metadata/{$externalId}");
 
         if (!$response->successful()) {
             return response()->json([
@@ -389,7 +429,7 @@ class EbookApiController extends Controller
         }
 
         $pages = $this->archivePageCount($metadata, $files);
-        
+
         $pageCount = 0;
 
         if (!empty($metadata['imagecount'])) {
@@ -423,7 +463,7 @@ class EbookApiController extends Controller
 
     private function showGoogleBooks($externalId)
     {
-        $response = Http::timeout(20)->get("https://www.googleapis.com/books/v1/volumes/{$externalId}");
+        $response = Http::connectTimeout(5)->timeout(10)->retry(2, 300)->get("https://www.googleapis.com/books/v1/volumes/{$externalId}");
 
         if (!$response->successful()) {
             return response()->json([
@@ -468,7 +508,7 @@ class EbookApiController extends Controller
 
     private function showGutendex($externalId)
     {
-        $response = Http::timeout(20)->get("https://gutendex.com/books/{$externalId}");
+        $response = Http::connectTimeout(5)->timeout(8)->retry(2, 300)->get("https://gutendex.com/books/{$externalId}");
 
         if (!$response->successful()) {
             return response()->json([
@@ -510,7 +550,7 @@ class EbookApiController extends Controller
 
     private function showOpenLibrary($externalId)
     {
-        $response = Http::timeout(20)->get("https://openlibrary.org/works/{$externalId}.json");
+        $response = Http::connectTimeout(5)->timeout(10)->retry(2, 300)->get("https://openlibrary.org/works/{$externalId}.json");
 
         if (!$response->successful()) {
             return response()->json([
