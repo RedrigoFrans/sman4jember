@@ -78,16 +78,12 @@ class AuthApiController extends Controller
         $data['type'] = 'umum';
         $member = $memberService->register($user, $data);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-
         return response()->json([
-            'message' => 'Registrasi berhasil! Akun sedang menunggu verifikasi admin.',
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-            'user' => $user->load('member')
+            'message' => 'Registrasi berhasil. Akun Anda sedang menunggu persetujuan admin.',
+            'user'    => $user->load('member')
         ], 201);
     }
-    public function registerSendOtp(Request $request, FonnteService $fonnte)
+    public function registerSendOtp(Request $request)
     {
         $data = $request->validate([
             'name'     => 'required|string|max:100',
@@ -112,21 +108,20 @@ class AuthApiController extends Controller
             'expires_at'    => now()->addMinutes(10)->toDateTimeString(),
         ], now()->addMinutes(10));
 
-        $message = "Kode OTP pendaftaran e-library Anda adalah: {$otp}. Kode berlaku 10 menit. Jangan berikan kode ini kepada siapa pun.";
-
         try {
-            $fonnte->sendMessage($normalizedPhone, $message);
+            Mail::to($data['email'])->send(new OtpMail($otp, $data['name']));
         } catch (\Throwable $e) {
             Cache::forget($cacheKey);
 
             return response()->json([
-                'message' => 'Gagal mengirim OTP ke WhatsApp. Silakan coba lagi atau hubungi admin.',
+                'message' => 'Gagal mengirim OTP ke email. Silakan coba lagi.',
+                'error'   => $e->getMessage(),
             ], 500);
         }
 
         return response()->json([
-            'message'    => 'Kode OTP pendaftaran telah dikirim ke WhatsApp.',
-            'phone_hint' => $this->maskPhoneNumber($normalizedPhone),
+            'message' => 'Kode OTP pendaftaran telah dikirim ke email Anda.',
+            'email'   => $this->maskEmail($data['email']),
         ]);
     }
 
@@ -198,11 +193,15 @@ class AuthApiController extends Controller
 
             $member = Member::create([
                 'user_id'     => $user->id,
+                'member_code' => $this->generateMemberCode('umum'),
+                'qr_token'    => (string) Str::uuid(),
                 'name'        => $otpData['name'],
                 'type'        => 'umum',
                 'phone'       => $otpData['phone'],
-                'status'      => 'aktif',
-                'verified_at' => now(),
+                'status'      => 'pending',
+                'expired_at'  => null,
+                'verified_at' => null,
+                'verified_by' => null,
             ]);
 
             $user->assignRole('anggota');
@@ -613,5 +612,32 @@ class AuthApiController extends Controller
         }
 
         return substr($digits, 0, 4) . str_repeat('*', max(0, $length - 7)) . substr($digits, -3);
+    }
+
+    private function maskEmail(string $email): string
+    {
+        [$name, $domain] = explode('@', $email);
+
+        $maskedName = strlen($name) <= 2
+            ? substr($name, 0, 1) . '*'
+            : substr($name, 0, 2) . str_repeat('*', max(1, strlen($name) - 2));
+
+        return $maskedName . '@' . $domain;
+    }
+
+    private function generateMemberCode(string $type): string
+    {
+        $year = now()->year;
+
+        $prefix = match ($type) {
+            'siswa' => 'SIS',
+            'guru'  => 'GUR',
+            default => 'UMU',
+        };
+
+        $lastId = Member::max('id') ?? 0;
+        $nextNumber = $lastId + 1;
+
+        return "{$prefix}-{$year}-{$nextNumber}";
     }
 }
