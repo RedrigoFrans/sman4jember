@@ -109,7 +109,7 @@ class LoanController extends Controller
         return response()->json(['valid' => true, 'copy' => $copy]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, \App\Services\FcmService $fcm)
     {
         $request->validate([
             'member_code' => 'required|string',
@@ -126,6 +126,35 @@ class LoanController extends Controller
         }
 
         $loan = $this->loanService->create($member, $request->barcodes, $request->user(), $request->loan_type);
+
+        // --- Kirim Push Notification ---
+        try {
+            $dueDateFormatted = \Carbon\Carbon::parse($loan->due_date)->locale('id')->translatedFormat('d F Y');
+            $title = 'Peminjaman Berhasil';
+            $body = "Buku berhasil dipinjam. Harap kembalikan sebelum atau pada tanggal $dueDateFormatted.";
+            
+            \App\Models\MemberNotification::create([
+                'member_id'  => $member->id,
+                'type'       => 'peminjaman_berhasil',
+                'title'      => $title,
+                'body'       => $body,
+                'data'       => ['loan_id' => (string) $loan->id],
+                'is_read'    => false,
+                'sent_at'    => now(),
+            ]);
+
+            $tokens = \App\Models\FcmToken::where('user_id', $member->user_id)
+                ->orWhereHas('user', fn($q) => $q->whereHas('member', fn($q2) => $q2->where('id', $member->id)))
+                ->pluck('token')
+                ->toArray();
+
+            if (!empty($tokens)) {
+                $fcm->sendMultiple($tokens, $title, $body, ['loan_id' => (string) $loan->id]);
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Gagal kirim push notification peminjaman: ' . $e->getMessage());
+        }
+        // -------------------------------
 
         return redirect()->route('history.index')->with('success', 'Peminjaman berhasil dibuat.');
     }

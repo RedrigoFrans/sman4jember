@@ -17,6 +17,7 @@ class SendLoanReminders extends Command
     public function handle(FcmService $fcm): void
     {
         $today = Carbon::today();
+        $this->info("Today: {$today->toDateString()}"); // DEBUG
 
         // Ambil semua item pinjaman yang belum dikembalikan
         $activeItems = LoanItem::with(['loan.member.user', 'copy.book'])
@@ -31,17 +32,37 @@ class SendLoanReminders extends Command
 
         foreach ($activeItems as $item) {
             $dueDate = $item->loan?->effectiveDueDate();
-            if (!$dueDate) continue;
+
+            // DEBUG: tampilkan info dasar tiap item
+            $this->line("---");
+            $this->line("  Item #{$item->id} | loan_id: {$item->loan_id}");
+            $this->line("  due_date raw    : " . ($item->loan?->due_date ?? 'NULL'));
+            $this->line("  extended_due    : " . ($item->loan?->extended_due_date ?? 'NULL'));
+            $this->line("  effectiveDueDate: " . ($dueDate ?? 'NULL'));
+            $this->line("  loan status     : " . ($item->loan?->status ?? 'NULL'));
+
+            if (!$dueDate) {
+                $this->warn("  ⚠ dueDate null, skip");
+                continue;
+            }
 
             $dueDate  = Carbon::parse($dueDate)->startOfDay();
             $diff     = $today->diffInDays($dueDate, false); // negatif = sudah lewat
             $member   = $item->loan->member;
             $bookTitle = $item->copy?->book?->title ?? 'Buku';
 
-            if (!$member) continue;
+            $this->line("  diff (hari)     : {$diff}");
+            $this->line("  member_id       : " . ($member?->id ?? 'NULL'));
+            $this->line("  member->user_id : " . ($member?->user_id ?? 'NULL'));
+            $this->line("  book            : {$bookTitle}");
+
+            if (!$member) {
+                $this->warn("  ⚠ Member null, skip");
+                continue;
+            }
 
             if ($diff === 1) {
-                // H-1: reminder pengembalian
+                $this->info("  → Kondisi: H-1, akan kirim reminder");
                 $this->sendNotification(
                     $fcm, $member, $item, 'reminder_pengembalian',
                     '⏰ Pengingat Pengembalian',
@@ -50,7 +71,7 @@ class SendLoanReminders extends Command
                 );
             } elseif ($diff === 0) {
                 $dueTodayCount++;
-                // H-0: hari pengembalian
+                $this->info("  → Kondisi: H-0, akan kirim reminder");
                 $this->sendNotification(
                     $fcm, $member, $item, 'reminder_pengembalian',
                     '📚 Hari Pengembalian',
@@ -59,16 +80,20 @@ class SendLoanReminders extends Command
                 );
             } elseif ($diff < 0) {
                 $overdueCount++;
-                // Sudah terlambat
                 $daysLate = abs($diff);
+                $this->info("  → Kondisi: Terlambat {$daysLate} hari, akan kirim peringatan");
                 $this->sendNotification(
                     $fcm, $member, $item, 'terlambat_pengembalian',
                     '⚠️ Buku Terlambat Dikembalikan',
                     "\"$bookTitle\" sudah terlambat $daysLate hari. Segera kembalikan!",
                     ['loan_id' => (string) $item->loan_id, 'days_late' => (string) $daysLate]
                 );
+            } else {
+                $this->warn("  ⚠ diff={$diff}, tidak masuk kondisi apapun (H-" . $diff . "), skip");
             }
         }
+
+        $this->line("---");
 
         // --- Kirim Notifikasi Rekap ke Admin ---
         if ($dueTodayCount > 0 || $overdueCount > 0) {
@@ -96,14 +121,19 @@ class SendLoanReminders extends Command
         string $body,
         array $data = []
     ): void {
-        // Cek apakah notifikasi serupa sudah dikirim hari ini
+        // DEBUG: cek alreadySent
         $alreadySent = MemberNotification::where('member_id', $member->id)
             ->where('type', $type)
             ->whereJsonContains('data->loan_id', $data['loan_id'] ?? '')
             ->whereDate('created_at', today())
             ->exists();
 
-        if ($alreadySent) return;
+        $this->line("  [sendNotif] alreadySent={$alreadySent} | member={$member->id} | type={$type} | loan_id=" . ($data['loan_id'] ?? '-'));
+
+        if ($alreadySent) {
+            $this->warn("  ⚠ Notifikasi sudah dikirim hari ini, skip");
+            return;
+        }
 
         // Simpan notifikasi ke database
         MemberNotification::create([
@@ -117,16 +147,21 @@ class SendLoanReminders extends Command
             'created_at' => now(),
         ]);
 
-        // Kirim push notification jika punya FCM token
+        // DEBUG: cek FCM tokens
         $tokens = FcmToken::where('user_id', $member->user_id ?? null)
             ->orWhereHas('user', fn($q) => $q->whereHas('member', fn($q2) => $q2->where('id', $member->id)))
             ->pluck('token')
             ->toArray();
 
+        $this->line("  [sendNotif] FCM tokens ditemukan: " . count($tokens));
+
         if (!empty($tokens)) {
             $fcm->sendMultiple($tokens, $title, $body, $data);
+            $this->info("  ✓ FCM dikirim ke " . count($tokens) . " token");
+        } else {
+            $this->warn("  ⚠ Tidak ada FCM token, push notification tidak dikirim");
         }
 
-        $this->line("  → [{$type}] Sent to {$member->id}: $title");
+        $this->line("  → [{$type}] Saved & sent to member #{$member->id}: $title");
     }
 }
