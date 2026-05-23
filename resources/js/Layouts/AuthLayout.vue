@@ -42,13 +42,17 @@
 </template>
 
 <script setup>
-import { watch } from 'vue'
+import { watch, onMounted } from 'vue'
 import { usePage } from '@inertiajs/vue3'
 import ToastNotification from '@/Components/ToastNotification.vue'
 import { useNotificationStore } from '@/stores/notification'
 
 const page = usePage()
 const notificationStore = useNotificationStore()
+
+onMounted(() => {
+  document.documentElement.classList.remove('dark')
+})
 
 watch(() => page.props.flash, (flash) => {
   if (flash?.success) notificationStore.success(flash.success)

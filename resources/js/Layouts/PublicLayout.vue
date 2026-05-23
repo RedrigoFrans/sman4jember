@@ -215,6 +215,7 @@ function isActivePage(key) {
 }
 
 onMounted(() => {
+  document.documentElement.classList.remove('dark')
   // Micro-interaction for header
   window.addEventListener('scroll', () => {
       const header = document.querySelector('header');
