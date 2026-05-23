@@ -12,6 +12,7 @@ class SettingController extends Controller
     public function index()
     {
         $settings = Setting::where('group', '!=', 'general')
+            ->where('group', '!=', 'reservasi')
             ->orderBy('group')
             ->orderBy('key')
             ->get()

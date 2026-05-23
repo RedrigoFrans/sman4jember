@@ -556,262 +556,269 @@ select.form-input { cursor: pointer; }
 
 .empty-state svg { margin: 0 auto 16px; opacity: 0.4; }
 
-/* ─── Dark Mode — Admin Panel ────────────────────────────────── */
-.dark body {
-    background: #0f172a;
-    color: #e2e8f0;
+/* ═══════════════════════════════════════════════════════════════
+   DARK MODE — ADMIN PANEL (Comprehensive Fix)
+   Semua teks, background, border, input, table, card diperbaiki
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Variabel warna dark mode ─────────────────────────────────── */
+:root {
+    --dk-bg-deep:    #0f172a;   /* Warna paling gelap (body, thead) */
+    --dk-bg-card:    #1e293b;   /* Card, panel, topbar */
+    --dk-bg-input:   #0f172a;   /* Input field */
+    --dk-bg-hover:   #273549;   /* Row hover */
+    --dk-border:     #2d3748;   /* Border default */
+    --dk-border-md:  #374151;   /* Border input */
+    --dk-text-primary: #f1f5f9; /* Teks utama (putih lembut) */
+    --dk-text-muted:   #94a3b8; /* Teks sekunder */
+    --dk-text-faint:   #64748b; /* Teks sangat redup */
 }
+
+/* ── Body & background dasar ────────────────────────────────────── */
+.dark body {
+    background: var(--dk-bg-deep);
+    color: var(--dk-text-primary);
+}
+
+/* ── Layout utama ───────────────────────────────────────────────── */
+.dark .main-content { background: var(--dk-bg-deep); }
+.dark .page-content  { background: var(--dk-bg-deep); }
 
 /* Topbar */
 .dark .topbar {
-    background: #1e293b;
-    border-bottom-color: #2d3748;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    background: var(--dk-bg-card) !important;
+    border-bottom-color: var(--dk-border) !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
 }
 
-/* Cards */
+/* Bottom fixed bar (Settings) */
+.dark .fixed.bottom-0 {
+    background-color: var(--dk-bg-card) !important;
+    border-top-color: var(--dk-border) !important;
+}
+
+/* ── Cards & Panels ─────────────────────────────────────────────── */
 .dark .card {
-    background: #1e293b;
-    border-color: #2d3748;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    background: var(--dk-bg-card) !important;
+    border-color: var(--dk-border) !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
 }
-
 .dark .card-header {
-    border-bottom-color: #2d3748;
+    border-bottom-color: var(--dk-border) !important;
 }
+.dark .card-body { background: var(--dk-bg-card); }
 
 /* Stat Cards */
 .dark .stat-card {
-    background: #1e293b;
-    border-color: #2d3748;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    background: var(--dk-bg-card) !important;
+    border-color: var(--dk-border) !important;
 }
+.dark .stat-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
 
-.dark .stat-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-}
-
-/* Teks dalam cards */
-.dark .text-slate-800 { color: #e2e8f0 !important; }
-.dark .text-slate-700 { color: #cbd5e1 !important; }
-.dark .text-slate-600 { color: #94a3b8 !important; }
-.dark .text-slate-500 { color: #64748b !important; }
-.dark .text-slate-400 { color: #475569 !important; }
-
-/* Page title */
-.dark .page-title { color: #f1f5f9; }
-.dark .page-subtitle { color: #94a3b8; }
-
-/* Table */
-.dark thead tr {
-    background: #0f172a;
-    border-bottom-color: #2d3748;
-}
-
-.dark thead th { color: #94a3b8; }
-
-.dark tbody tr { border-bottom-color: #2d3748; }
-.dark tbody tr:hover { background: #273549; }
-.dark tbody td { color: #cbd5e1; }
-
-/* Font medium dans semibold di tabel */
-.dark .font-medium { color: #e2e8f0; }
-
-/* Divider */
-.dark .divide-y > * { border-color: #2d3748; }
-.dark .divide-slate-50 > * { border-color: #2d3748 !important; }
-
-/* Form inputs */
-.dark .form-input {
-    background: #0f172a;
-    border-color: #2d3748;
-    color: #e2e8f0;
-}
-.dark .form-input:focus {
-    border-color: #2b5a41;
-    box-shadow: 0 0 0 3px rgba(43,90,65,0.25);
-}
-.dark .form-input::placeholder { color: #475569; }
-.dark .form-label { color: #cbd5e1; }
-
-/* Buttons */
-.dark .btn-secondary {
-    background: #273549;
-    color: #e2e8f0;
-    border-color: #2d3748;
-}
-.dark .btn-secondary:hover:not(:disabled) {
-    background: #334155;
-    color: #f1f5f9;
-}
-
-/* Stat icon backgrounds dalam dark mode */
+/* Stat icon backgrounds */
 .dark .stat-icon[style*="background:#eef2ff"] { background: #1e1b4b !important; }
 .dark .stat-icon[style*="background:#fef9c3"] { background: #1c1700 !important; }
 .dark .stat-icon[style*="background:#fee2e2"] { background: #1f0808 !important; }
 .dark .stat-icon[style*="background:#dcfce7"] { background: #022c1a !important; }
 
-/* Chart filter tabs */
-.dark .chart-filter-tabs { background: #0f172a; }
-.dark .chart-filter-btn { color: #94a3b8; }
-.dark .chart-filter-btn:hover { color: #4ade80; }
-.dark .chart-filter-btn.active {
-    background: #1e293b;
-    color: #4ade80;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
-}
-
-/* Amber book rank badge */
-.dark .bg-amber-50 { background: #1c1200 !important; }
-.dark .text-amber-600 { color: #fbbf24 !important; }
-
-/* Bg slate dalam dark */
-.dark .bg-slate-100 { background: #0f172a !important; }
-.dark .border-slate-200 { border-color: #2d3748 !important; }
-
-/* Popular books cover placeholder */
-.dark .bg-slate-100.border-slate-200 {
-    background: #0f172a !important;
-    border-color: #2d3748 !important;
-}
-
-/* Indigo link color */
-.dark .text-indigo-500 { color: #4ade80 !important; }
-.dark .text-indigo-500:hover { color: #86efac !important; }
-
-/* ─── Dark Mode — Tailwind Class Overrides (semua halaman admin) ── */
-
-/* Background putih dan abu → gelap */
-.dark .bg-white { background-color: #1e293b !important; }
-.dark .bg-gray-50 { background-color: #0f172a !important; }
+/* ── Semua elemen bg-white → bg gelap ──────────────────────────── */
+.dark .bg-white { background-color: var(--dk-bg-card) !important; }
+.dark .bg-gray-50  { background-color: var(--dk-bg-deep) !important; }
 .dark .bg-gray-100 { background-color: #1a2332 !important; }
 .dark .bg-gray-200 { background-color: #273549 !important; }
+.dark .bg-slate-50  { background-color: var(--dk-bg-deep) !important; }
+.dark .bg-slate-100 { background-color: #1a2332 !important; }
+.dark .bg-slate-200 { background-color: #273549 !important; }
 
-/* Border abu → gelap */
-.dark .border-gray-100 { border-color: #2d3748 !important; }
-.dark .border-gray-200 { border-color: #2d3748 !important; }
-.dark .border-gray-300 { border-color: #374151 !important; }
+/* Emerald accent backgrounds */
+.dark .bg-emerald-50  { background-color: #022c1a !important; }
+.dark .bg-emerald-100 { background-color: #033821 !important; }
+.dark .bg-amber-50    { background-color: #1c1200 !important; }
 
-/* Teks abu → terang */
-.dark .text-gray-900 { color: #f1f5f9 !important; }
-.dark .text-gray-800 { color: #e2e8f0 !important; }
-.dark .text-gray-700 { color: #cbd5e1 !important; }
-.dark .text-gray-600 { color: #94a3b8 !important; }
-.dark .text-gray-500 { color: #64748b !important; }
-.dark .text-gray-400 { color: #475569 !important; }
-.dark .text-gray-300 { color: #334155 !important; }
+/* ── Border ─────────────────────────────────────────────────────── */
+.dark .border-gray-100, .dark .border-gray-200 { border-color: var(--dk-border) !important; }
+.dark .border-gray-300 { border-color: var(--dk-border-md) !important; }
+.dark .border-slate-100, .dark .border-slate-200 { border-color: var(--dk-border) !important; }
+.dark .divide-y > *           { border-color: var(--dk-border) !important; }
+.dark .divide-gray-100 > *    { border-color: var(--dk-border) !important; }
+.dark .divide-slate-50 > *    { border-color: var(--dk-border) !important; }
 
-/* Filter bar dan toolbar wrapper */
-.dark .bg-white.rounded-xl,
-.dark .bg-white.rounded-2xl,
-.dark .bg-white.rounded-lg {
-    background-color: #1e293b !important;
+/* ── TEKS — semua warna text-gray-* dan text-slate-* ────────────── */
+/* Teks gelap → terang */
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-slate-800,
+.dark .text-slate-900 { color: var(--dk-text-primary) !important; }
+
+.dark .text-gray-700,
+.dark .text-slate-700 { color: #cbd5e1 !important; }
+
+.dark .text-gray-600,
+.dark .text-slate-600 { color: var(--dk-text-muted) !important; }
+
+.dark .text-gray-500,
+.dark .text-slate-500 { color: var(--dk-text-faint) !important; }
+
+.dark .text-gray-400,
+.dark .text-slate-400 { color: #475569 !important; }
+
+/* Teks hitam biasa */
+.dark .text-black { color: var(--dk-text-primary) !important; }
+
+/* Font weight tidak mengubah warna */
+.dark .font-bold,
+.dark .font-semibold,
+.dark .font-medium { color: inherit; }
+
+/* ── Page title & subtitle ──────────────────────────────────────── */
+.dark .page-title   { color: var(--dk-text-primary) !important; }
+.dark .page-subtitle { color: var(--dk-text-muted) !important; }
+
+/* Text-2xl, text-xl, text-lg di dalam dark */
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+    color: var(--dk-text-primary);
 }
 
-/* Input, Select, Textarea */
-.dark input[type="text"],
-.dark input[type="email"],
-.dark input[type="number"],
-.dark input[type="tel"],
-.dark input[type="date"],
-.dark input[type="search"],
-.dark input[type="password"],
+.dark p, .dark span, .dark label, .dark li {
+    color: inherit;
+}
+
+/* ── Tabel ──────────────────────────────────────────────────────── */
+.dark table  { background-color: var(--dk-bg-card); }
+
+.dark thead,
+.dark thead tr {
+    background-color: var(--dk-bg-deep) !important;
+    border-bottom-color: var(--dk-border) !important;
+}
+.dark thead th {
+    color: var(--dk-text-muted) !important;
+    background-color: var(--dk-bg-deep) !important;
+}
+
+.dark tbody tr {
+    background-color: var(--dk-bg-card) !important;
+    border-bottom-color: var(--dk-border) !important;
+}
+.dark tbody tr:nth-child(even) { background-color: #192131 !important; }
+.dark tbody tr:hover  { background-color: var(--dk-bg-hover) !important; }
+.dark tbody td        { color: #cbd5e1 !important; }
+
+/* Table wrapper */
+.dark .table-wrapper              { background-color: var(--dk-bg-card) !important; }
+.dark .overflow-x-auto            { background-color: var(--dk-bg-card) !important; }
+.dark .overflow-x-auto.border     { border-color: var(--dk-border) !important; }
+
+/* ── Input, Select, Textarea ────────────────────────────────────── */
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 .dark select,
 .dark textarea {
-    background-color: #0f172a !important;
-    border-color: #374151 !important;
-    color: #e2e8f0 !important;
+    background-color: var(--dk-bg-input) !important;
+    border-color: var(--dk-border-md) !important;
+    color: var(--dk-text-primary) !important;
 }
 
 .dark input::placeholder,
-.dark textarea::placeholder {
-    color: #475569 !important;
-}
+.dark textarea::placeholder { color: var(--dk-text-faint) !important; }
 
 .dark select option {
-    background-color: #1e293b;
-    color: #e2e8f0;
+    background-color: var(--dk-bg-card);
+    color: var(--dk-text-primary);
 }
 
-/* Table — thead background */
-.dark thead,
-.dark thead tr {
-    background-color: #0f172a !important;
-    border-bottom-color: #2d3748 !important;
+/* Focus state input */
+.dark input:focus,
+.dark select:focus,
+.dark textarea:focus {
+    outline: none !important;
+    border-color: #34d399 !important;
+    box-shadow: 0 0 0 3px rgba(52,211,153,0.2) !important;
 }
 
-.dark thead th {
-    color: #94a3b8 !important;
-    background-color: #0f172a !important;
+/* Prefix/Suffix dalam input (Rp, hari, kali) */
+.dark .pointer-events-none span { color: var(--dk-text-muted) !important; }
+
+/* ── Form (class form-input, form-label) ────────────────────────── */
+.dark .form-input {
+    background: var(--dk-bg-input);
+    border-color: var(--dk-border);
+    color: var(--dk-text-primary);
+}
+.dark .form-input::placeholder { color: var(--dk-text-faint); }
+.dark .form-label { color: #cbd5e1; }
+
+/* ── Buttons ────────────────────────────────────────────────────── */
+.dark .btn-secondary {
+    background: #273549;
+    color: var(--dk-text-primary);
+    border-color: var(--dk-border);
+}
+.dark .btn-secondary:hover:not(:disabled) {
+    background: #334155;
+    color: #f1f5f9;
+}
+.dark .btn-outline {
+    background: transparent;
+    color: var(--dk-text-primary);
+    border-color: var(--dk-border);
+}
+.dark .btn-outline:hover:not(:disabled) {
+    background: rgba(255,255,255,0.08);
 }
 
-/* Table — tbody rows */
-.dark tbody tr {
-    border-bottom-color: #2d3748 !important;
-    background-color: #1e293b !important;
-}
+/* ── Badges ─────────────────────────────────────────────────────── */
+.dark .badge-gray  { background: #1e293b; color: #94a3b8; border: 1px solid #374151; }
 
-.dark tbody tr:nth-child(even) {
-    background-color: #192131 !important;
-}
+/* ── Pagination ─────────────────────────────────────────────────── */
+.dark .bg-white.border  { background-color: var(--dk-bg-card) !important; }
+.dark .text-gray-600.border,
+.dark .text-gray-700.border { color: var(--dk-text-muted) !important; }
+.dark .hover\:bg-gray-50:hover  { background-color: var(--dk-bg-hover) !important; }
+.dark .hover\:bg-gray-100:hover { background-color: var(--dk-bg-hover) !important; }
 
-.dark tbody tr:hover {
-    background-color: #273549 !important;
-}
-
-.dark tbody td {
-    color: #cbd5e1 !important;
-}
-
-/* Table wrapper */
-.dark .overflow-x-auto.bg-white,
-.dark .table-wrapper {
-    background-color: #1e293b !important;
-    border-color: #2d3748 !important;
-}
-
-/* Pagination buttons */
-.dark .bg-white.text-gray-600,
-.dark .bg-white.text-gray-700 {
-    background-color: #1e293b !important;
-    color: #94a3b8 !important;
-    border-color: #374151 !important;
-}
-
-.dark .hover\:bg-gray-50:hover { background-color: #273549 !important; }
-.dark .hover\:bg-gray-100:hover { background-color: #273549 !important; }
-
-/* Badges — tidak override warna aktif (merah/hijau dll tetap) */
-.dark .badge-gray { background: #1e293b; color: #94a3b8; border: 1px solid #374151; }
-
-/* Modal/Dialog */
-.dark .bg-white.rounded-2xl,
-.dark .bg-white.rounded-3xl {
-    background-color: #1e293b !important;
-    border-color: #2d3748 !important;
-}
-
-/* Overlay backdrop tetap gelap */
-.dark [class*="bg-black\/"],
-.dark [class*="bg-gray-900\/"] {
+/* ── Modal / Dialog ─────────────────────────────────────────────── */
+.dark .fixed.inset-0:not(.sidebar) {
     background-color: rgba(0,0,0,0.7) !important;
 }
 
-/* Divider */
-.dark .border-t { border-top-color: #2d3748 !important; }
-.dark .border-b { border-bottom-color: #2d3748 !important; }
-.dark .border-l { border-left-color: #2d3748 !important; }
-.dark .border-r { border-right-color: #2d3748 !important; }
+/* ── Divider garis ──────────────────────────────────────────────── */
+.dark .border-t { border-top-color:    var(--dk-border) !important; }
+.dark .border-b { border-bottom-color: var(--dk-border) !important; }
+.dark .border-l { border-left-color:   var(--dk-border) !important; }
+.dark .border-r { border-right-color:  var(--dk-border) !important; }
+.dark .border   { border-color:        var(--dk-border) !important; }
 
-/* Shadow lebih gelap di dark */
-.dark .shadow-sm { box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important; }
-.dark .shadow { box-shadow: 0 2px 6px rgba(0,0,0,0.5) !important; }
-.dark .shadow-xl { box-shadow: 0 8px 24px rgba(0,0,0,0.6) !important; }
+/* ── Chart (Dashboard) ──────────────────────────────────────────── */
+.dark .chart-filter-tabs { background: var(--dk-bg-deep); }
+.dark .chart-filter-btn  { color: var(--dk-text-muted); }
+.dark .chart-filter-btn:hover  { color: #4ade80; }
+.dark .chart-filter-btn.active {
+    background: var(--dk-bg-card);
+    color: #4ade80;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
 
-/* Ring / focus ring */
-.dark .ring-1.ring-slate-100 { --tw-ring-color: #2d3748 !important; }
+/* ── Link warna ─────────────────────────────────────────────────── */
+.dark .text-indigo-500       { color: #4ade80 !important; }
+.dark .text-indigo-500:hover { color: #86efac !important; }
+.dark a.text-indigo-500      { color: #4ade80 !important; }
 
-/* Teks hitam biasa */
-.dark .text-black { color: #e2e8f0 !important; }
+/* ── Shadow ─────────────────────────────────────────────────────── */
+.dark .shadow-sm { box-shadow: 0 1px 3px rgba(0,0,0,0.5) !important; }
+.dark .shadow    { box-shadow: 0 2px 6px rgba(0,0,0,0.6) !important; }
+.dark .shadow-xl { box-shadow: 0 8px 24px rgba(0,0,0,0.7) !important; }
 
-/* Teks merah tetap merah, hijau tetap hijau — tidak di-override */
+/* ── Ring ───────────────────────────────────────────────────────── */
+.dark .ring-1 { --tw-ring-color: var(--dk-border); }
+
+/* ── Hover row settings ─────────────────────────────────────────── */
+.dark .hover\:bg-gray-50\/50:hover { background-color: rgba(39,53,73,0.5) !important; }
+
+/* ── Warna teks khusus yang TIDAK boleh diubah ──────────────────── */
+/* (Merah, hijau, kuning, amber — tetap terlihat) */
+.dark .text-red-500,    .dark .text-red-600    { color: #f87171 !important; }
+.dark .text-green-500,  .dark .text-green-600,
+.dark .text-emerald-600,
+.dark .text-emerald-700 { color: #34d399 !important; }
+.dark .text-amber-600,  .dark .text-yellow-600 { color: #fbbf24 !important; }
+.dark .text-blue-500,   .dark .text-blue-600   { color: #60a5fa !important; }
