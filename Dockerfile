@@ -94,6 +94,8 @@ COPY --from=frontend-builder /app/public/build ./public/build
 RUN chown -R www-data:www-data \
         storage \
         bootstrap/cache \
+        /var/lib/nginx \
+        /var/log/nginx \
     && chmod -R 775 storage bootstrap/cache
 
 # Buat direktori untuk Supervisor log
