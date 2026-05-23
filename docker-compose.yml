@@ -79,7 +79,7 @@ services:
     ports:
       - "3307:3306"  # expose ke host di port 3307 (hindari konflik)
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p\"$$MYSQL_ROOT_PASSWORD\""]
       timeout: 10s
       retries: 10
       interval: 5s
