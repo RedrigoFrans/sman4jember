@@ -100,7 +100,7 @@ pipeline {
                     # Masuk ke folder deploy dan jalankan container
                     cd ${DEPLOY_DIR}
                     echo ">>> Starting containers..."
-                    docker compose up -d --remove-orphans
+                    docker compose up -d --no-build --remove-orphans
 
                     echo ">>> Waiting for DB..."
                     sleep 15

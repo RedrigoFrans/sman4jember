@@ -19,6 +19,7 @@ services:
   # Laravel App (PHP-FPM + Nginx via Supervisor)
   # ----------------------------------------------------------
   app:
+    image: devora-web:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -110,6 +111,7 @@ services:
   # Queue Worker
   # ----------------------------------------------------------
   queue:
+    image: devora-web:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -148,6 +150,7 @@ services:
   # Scheduler (Laravel Cron)
   # ----------------------------------------------------------
   scheduler:
+    image: devora-web:latest
     build:
       context: .
       dockerfile: Dockerfile
