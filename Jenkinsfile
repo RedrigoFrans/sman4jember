@@ -87,44 +87,40 @@ pipeline {
                 branch 'main'
             }
             steps {
-                echo ">>> Deploying to VPS..."
+                echo ">>> Deploying locally on VPS..."
+                sh """
+                    # Copy docker-compose.yml ke VPS deploy directory
+                    cp ${COMPOSE_FILE} ${DEPLOY_DIR}/
 
-                // Gunakan SSH credentials yang disimpan di Jenkins
-                sshagent(credentials: ['vps-ssh-key']) {
-                    sh """
-                        # Copy docker-compose.yml ke VPS
-                        scp -o StrictHostKeyChecking=no \
-                            ${COMPOSE_FILE} \
-                            \$VPS_USER@\$VPS_HOST:${DEPLOY_DIR}/
+                    # Copy template .env jika belum ada .env di deploy directory
+                    if [ ! -f "${DEPLOY_DIR}/.env" ]; then
+                        if [ -f ".env.production" ]; then
+                            cp .env.production ${DEPLOY_DIR}/.env
+                        elif [ -f ".env.example" ]; then
+                            cp .env.example ${DEPLOY_DIR}/.env
+                        fi
+                    fi
 
-                        # Deploy via SSH
-                        ssh -o StrictHostKeyChecking=no \$VPS_USER@\$VPS_HOST '
-                            set -e
-                            cd ${DEPLOY_DIR}
+                    # Masuk ke folder deploy dan jalankan container
+                    cd ${DEPLOY_DIR}
+                    echo ">>> Starting containers..."
+                    docker compose up -d --remove-orphans
 
-                            echo ">>> Pulling latest image..."
-                            docker pull devora-web:latest 2>/dev/null || true
+                    echo ">>> Waiting for DB..."
+                    sleep 15
 
-                            echo ">>> Starting containers..."
-                            docker compose up -d --remove-orphans
+                    echo ">>> Running migrations..."
+                    docker compose exec -T app php artisan migrate --force
 
-                            echo ">>> Waiting for DB..."
-                            sleep 15
+                    echo ">>> Optimizing Laravel..."
+                    docker compose exec -T app php artisan optimize:clear
+                    docker compose exec -T app php artisan optimize
 
-                            echo ">>> Running migrations..."
-                            docker compose exec -T app php artisan migrate --force
+                    echo ">>> Containers status:"
+                    docker compose ps
 
-                            echo ">>> Optimizing Laravel..."
-                            docker compose exec -T app php artisan optimize:clear
-                            docker compose exec -T app php artisan optimize
-
-                            echo ">>> Containers status:"
-                            docker compose ps
-
-                            echo "✅ Deploy selesai!"
-                        '
-                    """
-                }
+                    echo "✅ Deploy selesai!"
+                """
             }
         }
 
@@ -135,14 +131,11 @@ pipeline {
             }
             steps {
                 echo ">>> Checking app health..."
-                sshagent(credentials: ['vps-ssh-key']) {
-                    sh """
-                        ssh -o StrictHostKeyChecking=no \$VPS_USER@\$VPS_HOST '
-                            docker compose -f ${DEPLOY_DIR}/${COMPOSE_FILE} ps
-                            echo "Health check passed ✅"
-                        '
-                    """
-                }
+                sh """
+                    cd ${DEPLOY_DIR}
+                    docker compose ps
+                    echo "Health check passed ✅"
+                """
             }
         }
     }
