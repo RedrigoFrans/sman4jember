@@ -82,10 +82,6 @@ pipeline {
 
         // ── Stage 4: Deploy ke VPS ──────────────────────────────
         stage('🚀 Deploy to VPS') {
-            // Hanya deploy jika branch = main
-            when {
-                branch 'main'
-            }
             steps {
                 echo ">>> Deploying locally on VPS..."
                 sh """
@@ -126,9 +122,6 @@ pipeline {
 
         // ── Stage 5: Health Check ────────────────────────────────
         stage('❤️ Health Check') {
-            when {
-                branch 'main'
-            }
             steps {
                 echo ">>> Checking app health..."
                 sh """
