@@ -202,37 +202,33 @@
             <h2 class="font-headline-md text-[24px] text-primary mb-6">Edit Informasi Akun</h2>
             
             <form @submit.prevent="submitEdit" enctype="multipart/form-data" class="flex flex-col gap-6 w-full max-w-2xl">
-              <!-- Photo -->
+              <!-- Photo (disabled) -->
               <div class="flex flex-col gap-2">
                 <label class="font-label-md text-on-surface-variant flex items-center gap-2">Foto Profil</label>
-                <div class="flex items-center gap-6">
+                <div class="flex items-center gap-6 opacity-50 pointer-events-none">
                   <div class="shrink-0 relative w-20 h-20 rounded-full border border-outline-variant overflow-hidden bg-surface-variant flex items-center justify-center">
-                    <img v-if="photoPreview" :src="photoPreview" class="w-full h-full object-cover" />
-                    <img v-else-if="member?.photo" :src="`/storage/${member.photo}`" class="w-full h-full object-cover bg-white" />
+                    <img v-if="member?.photo" :src="`/storage/${member.photo}`" class="w-full h-full object-cover bg-white" />
                     <span v-else class="text-2xl font-bold text-outline">{{ user.name[0] }}</span>
                   </div>
                   <div>
-                    <label class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-variant transition-colors text-sm font-semibold">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-outline-variant rounded-lg text-sm font-semibold cursor-not-allowed">
                       <span class="material-symbols-outlined text-[18px]">upload</span>
                       Pilih Foto
-                      <input type="file" accept="image/*" @change="onPhotoChange" class="hidden" />
-                    </label>
+                    </div>
                     <p class="text-[12px] text-outline mt-2">Format: JPG/PNG, Maks. 2MB</p>
-                    <p v-if="form.errors?.photo" class="text-[12px] text-error mt-1">{{ form.errors.photo }}</p>
                   </div>
                 </div>
               </div>
               
               <hr class="border-t border-surface-variant my-2" />
               
-              <!-- Email -->
+              <!-- Email (disabled) -->
               <div class="flex flex-col gap-2">
                 <label class="font-label-md text-on-surface-variant flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
                   Email Akun
                   <span class="text-[11px] font-normal opacity-70">*(Digunakan untuk login)*</span>
                 </label>
-                <input v-model="form.email" type="email" class="w-full border border-outline-variant rounded-xl px-4 py-3 text-[14px] bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" />
-                <p v-if="form.errors?.email" class="text-[12px] text-error">{{ form.errors.email }}</p>
+                <input type="email" :value="user.email" disabled class="w-full border border-outline-variant/50 rounded-xl px-4 py-3 text-[14px] bg-surface-variant/40 text-on-surface-variant cursor-not-allowed" />
               </div>
               
               <!-- Phone & NIS/NIP grid -->
@@ -244,8 +240,7 @@
                 </div>
                 <div class="flex flex-col gap-2">
                   <label class="font-label-md text-on-surface-variant">NIS / NIP</label>
-                  <input v-model="form.nis_nip" type="text" class="w-full border border-outline-variant rounded-xl px-4 py-3 text-[14px] bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Nomor Induk" />
-                  <p v-if="form.errors?.nis_nip" class="text-[12px] text-error">{{ form.errors.nis_nip }}</p>
+                  <input type="text" :value="member?.nis_nip || ''" disabled placeholder="Nomor Induk" class="w-full border border-outline-variant/50 rounded-xl px-4 py-3 text-[14px] bg-surface-variant/40 text-on-surface-variant cursor-not-allowed" />
                 </div>
               </div>
               
@@ -346,29 +341,16 @@ watch(activeTab, async (tab) => {
 })
 
 const form = useForm({
-  email:   user.email || '',
   phone:   props.member?.phone   || '',
-  nis_nip: props.member?.nis_nip || '',
   address: props.member?.address || '',
-  photo:   null,
   _method: 'PUT',
 })
-
-function onPhotoChange(e) {
-  const file = e.target.files[0]
-  if (!file) return
-  form.photo = file
-  const reader = new FileReader()
-  reader.onload = ev => { photoPreview.value = ev.target.result }
-  reader.readAsDataURL(file)
-}
 
 function submitEdit() {
   form.post(route('anggota.profile.update'), {
     forceFormData: true,
     onSuccess: () => {
       activeTab.value = 'info'
-      photoPreview.value = null
     },
   })
 }

@@ -344,7 +344,7 @@ const chartOptions = {
     },
     y: {
       beginAtZero: true,
-      grid: { color: '#f1f5f9', lineWidth: 1 },
+      grid: { color: '#1e293b', lineWidth: 1 },
       ticks: {
         font: { size: 10 },
         color: '#94a3b8',

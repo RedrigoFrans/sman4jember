@@ -30,22 +30,9 @@ class ProfileController extends Controller
         $member = $user->member;
 
         $data = $request->validate([
-            'email'   => 'nullable|email|max:255|unique:users,email,' . $user->id,
             'phone'   => 'nullable|string|max:20',
             'address' => 'nullable|string|max:255',
-            'nis_nip' => 'nullable|string|max:30',
-            'photo'   => 'nullable|image|max:2048',
         ]);
-
-        // Update email on User model if changed
-        if (!empty($data['email']) && $data['email'] !== $user->email) {
-            $user->update(['email' => $data['email']]);
-        }
-        unset($data['email']);
-
-        if ($request->hasFile('photo')) {
-            $data['photo'] = $request->file('photo')->store('member-photos', 'public');
-        }
 
         $member->update($data);
 

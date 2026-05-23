@@ -183,10 +183,6 @@
                 </div>
               </div>
 
-              <!-- Borrow Button in Modal -->
-              <Link v-if="$page.props.auth?.user" :href="route('dashboard')" class="w-full mt-4 py-3 bg-primary text-on-primary font-label-md rounded-xl text-center hover:opacity-90 transition-opacity no-underline shadow-md">
-                Pinjam Buku Ini
-              </Link>
             </div>
 
             <!-- Right: Detail -->

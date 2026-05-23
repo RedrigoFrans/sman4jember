@@ -555,3 +555,263 @@ select.form-input { cursor: pointer; }
 }
 
 .empty-state svg { margin: 0 auto 16px; opacity: 0.4; }
+
+/* ─── Dark Mode — Admin Panel ────────────────────────────────── */
+.dark body {
+    background: #0f172a;
+    color: #e2e8f0;
+}
+
+/* Topbar */
+.dark .topbar {
+    background: #1e293b;
+    border-bottom-color: #2d3748;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* Cards */
+.dark .card {
+    background: #1e293b;
+    border-color: #2d3748;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.dark .card-header {
+    border-bottom-color: #2d3748;
+}
+
+/* Stat Cards */
+.dark .stat-card {
+    background: #1e293b;
+    border-color: #2d3748;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.dark .stat-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+/* Teks dalam cards */
+.dark .text-slate-800 { color: #e2e8f0 !important; }
+.dark .text-slate-700 { color: #cbd5e1 !important; }
+.dark .text-slate-600 { color: #94a3b8 !important; }
+.dark .text-slate-500 { color: #64748b !important; }
+.dark .text-slate-400 { color: #475569 !important; }
+
+/* Page title */
+.dark .page-title { color: #f1f5f9; }
+.dark .page-subtitle { color: #94a3b8; }
+
+/* Table */
+.dark thead tr {
+    background: #0f172a;
+    border-bottom-color: #2d3748;
+}
+
+.dark thead th { color: #94a3b8; }
+
+.dark tbody tr { border-bottom-color: #2d3748; }
+.dark tbody tr:hover { background: #273549; }
+.dark tbody td { color: #cbd5e1; }
+
+/* Font medium dans semibold di tabel */
+.dark .font-medium { color: #e2e8f0; }
+
+/* Divider */
+.dark .divide-y > * { border-color: #2d3748; }
+.dark .divide-slate-50 > * { border-color: #2d3748 !important; }
+
+/* Form inputs */
+.dark .form-input {
+    background: #0f172a;
+    border-color: #2d3748;
+    color: #e2e8f0;
+}
+.dark .form-input:focus {
+    border-color: #2b5a41;
+    box-shadow: 0 0 0 3px rgba(43,90,65,0.25);
+}
+.dark .form-input::placeholder { color: #475569; }
+.dark .form-label { color: #cbd5e1; }
+
+/* Buttons */
+.dark .btn-secondary {
+    background: #273549;
+    color: #e2e8f0;
+    border-color: #2d3748;
+}
+.dark .btn-secondary:hover:not(:disabled) {
+    background: #334155;
+    color: #f1f5f9;
+}
+
+/* Stat icon backgrounds dalam dark mode */
+.dark .stat-icon[style*="background:#eef2ff"] { background: #1e1b4b !important; }
+.dark .stat-icon[style*="background:#fef9c3"] { background: #1c1700 !important; }
+.dark .stat-icon[style*="background:#fee2e2"] { background: #1f0808 !important; }
+.dark .stat-icon[style*="background:#dcfce7"] { background: #022c1a !important; }
+
+/* Chart filter tabs */
+.dark .chart-filter-tabs { background: #0f172a; }
+.dark .chart-filter-btn { color: #94a3b8; }
+.dark .chart-filter-btn:hover { color: #4ade80; }
+.dark .chart-filter-btn.active {
+    background: #1e293b;
+    color: #4ade80;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+
+/* Amber book rank badge */
+.dark .bg-amber-50 { background: #1c1200 !important; }
+.dark .text-amber-600 { color: #fbbf24 !important; }
+
+/* Bg slate dalam dark */
+.dark .bg-slate-100 { background: #0f172a !important; }
+.dark .border-slate-200 { border-color: #2d3748 !important; }
+
+/* Popular books cover placeholder */
+.dark .bg-slate-100.border-slate-200 {
+    background: #0f172a !important;
+    border-color: #2d3748 !important;
+}
+
+/* Indigo link color */
+.dark .text-indigo-500 { color: #4ade80 !important; }
+.dark .text-indigo-500:hover { color: #86efac !important; }
+
+/* ─── Dark Mode — Tailwind Class Overrides (semua halaman admin) ── */
+
+/* Background putih dan abu → gelap */
+.dark .bg-white { background-color: #1e293b !important; }
+.dark .bg-gray-50 { background-color: #0f172a !important; }
+.dark .bg-gray-100 { background-color: #1a2332 !important; }
+.dark .bg-gray-200 { background-color: #273549 !important; }
+
+/* Border abu → gelap */
+.dark .border-gray-100 { border-color: #2d3748 !important; }
+.dark .border-gray-200 { border-color: #2d3748 !important; }
+.dark .border-gray-300 { border-color: #374151 !important; }
+
+/* Teks abu → terang */
+.dark .text-gray-900 { color: #f1f5f9 !important; }
+.dark .text-gray-800 { color: #e2e8f0 !important; }
+.dark .text-gray-700 { color: #cbd5e1 !important; }
+.dark .text-gray-600 { color: #94a3b8 !important; }
+.dark .text-gray-500 { color: #64748b !important; }
+.dark .text-gray-400 { color: #475569 !important; }
+.dark .text-gray-300 { color: #334155 !important; }
+
+/* Filter bar dan toolbar wrapper */
+.dark .bg-white.rounded-xl,
+.dark .bg-white.rounded-2xl,
+.dark .bg-white.rounded-lg {
+    background-color: #1e293b !important;
+}
+
+/* Input, Select, Textarea */
+.dark input[type="text"],
+.dark input[type="email"],
+.dark input[type="number"],
+.dark input[type="tel"],
+.dark input[type="date"],
+.dark input[type="search"],
+.dark input[type="password"],
+.dark select,
+.dark textarea {
+    background-color: #0f172a !important;
+    border-color: #374151 !important;
+    color: #e2e8f0 !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+    color: #475569 !important;
+}
+
+.dark select option {
+    background-color: #1e293b;
+    color: #e2e8f0;
+}
+
+/* Table — thead background */
+.dark thead,
+.dark thead tr {
+    background-color: #0f172a !important;
+    border-bottom-color: #2d3748 !important;
+}
+
+.dark thead th {
+    color: #94a3b8 !important;
+    background-color: #0f172a !important;
+}
+
+/* Table — tbody rows */
+.dark tbody tr {
+    border-bottom-color: #2d3748 !important;
+    background-color: #1e293b !important;
+}
+
+.dark tbody tr:nth-child(even) {
+    background-color: #192131 !important;
+}
+
+.dark tbody tr:hover {
+    background-color: #273549 !important;
+}
+
+.dark tbody td {
+    color: #cbd5e1 !important;
+}
+
+/* Table wrapper */
+.dark .overflow-x-auto.bg-white,
+.dark .table-wrapper {
+    background-color: #1e293b !important;
+    border-color: #2d3748 !important;
+}
+
+/* Pagination buttons */
+.dark .bg-white.text-gray-600,
+.dark .bg-white.text-gray-700 {
+    background-color: #1e293b !important;
+    color: #94a3b8 !important;
+    border-color: #374151 !important;
+}
+
+.dark .hover\:bg-gray-50:hover { background-color: #273549 !important; }
+.dark .hover\:bg-gray-100:hover { background-color: #273549 !important; }
+
+/* Badges — tidak override warna aktif (merah/hijau dll tetap) */
+.dark .badge-gray { background: #1e293b; color: #94a3b8; border: 1px solid #374151; }
+
+/* Modal/Dialog */
+.dark .bg-white.rounded-2xl,
+.dark .bg-white.rounded-3xl {
+    background-color: #1e293b !important;
+    border-color: #2d3748 !important;
+}
+
+/* Overlay backdrop tetap gelap */
+.dark [class*="bg-black\/"],
+.dark [class*="bg-gray-900\/"] {
+    background-color: rgba(0,0,0,0.7) !important;
+}
+
+/* Divider */
+.dark .border-t { border-top-color: #2d3748 !important; }
+.dark .border-b { border-bottom-color: #2d3748 !important; }
+.dark .border-l { border-left-color: #2d3748 !important; }
+.dark .border-r { border-right-color: #2d3748 !important; }
+
+/* Shadow lebih gelap di dark */
+.dark .shadow-sm { box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important; }
+.dark .shadow { box-shadow: 0 2px 6px rgba(0,0,0,0.5) !important; }
+.dark .shadow-xl { box-shadow: 0 8px 24px rgba(0,0,0,0.6) !important; }
+
+/* Ring / focus ring */
+.dark .ring-1.ring-slate-100 { --tw-ring-color: #2d3748 !important; }
+
+/* Teks hitam biasa */
+.dark .text-black { color: #e2e8f0 !important; }
+
+/* Teks merah tetap merah, hijau tetap hijau — tidak di-override */
