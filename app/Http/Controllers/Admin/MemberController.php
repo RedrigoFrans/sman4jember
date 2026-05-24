@@ -28,9 +28,9 @@ class MemberController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'type'             => 'required|in:siswa,guru',
+            'type'             => 'required|in:siswa,guru,umum',
             'name'             => 'required|string|max:100',
-            'nis_nip'          => 'required|string|max:30|unique:members,nis_nip',
+            'nis_nip'          => 'nullable|string|max:30|unique:members,nis_nip',
             'class_id'         => 'required_if:type,siswa|nullable|exists:classes,id',
             'jenis_kelamin'    => 'nullable|in:L,P',
             'nisn'             => 'nullable|string|max:20',
@@ -42,6 +42,11 @@ class MemberController extends Controller
             'address'          => 'nullable|string|max:255',
             'phone'            => 'nullable|string|max:20',
         ]);
+
+        // Wajib NIS/NIP hanya untuk siswa dan guru
+        if (in_array($data['type'], ['siswa', 'guru']) && empty($data['nis_nip'])) {
+            return back()->withErrors(['nis_nip' => 'NIS/NIP wajib diisi untuk tipe siswa atau guru.'])->withInput();
+        }
 
         $this->memberService->createByAdmin($data, $request->user()->id);
 
@@ -51,9 +56,9 @@ class MemberController extends Controller
     public function update(Request $request, Member $member)
     {
         $data = $request->validate([
-            'type'             => 'required|in:siswa,guru',
+            'type'             => 'required|in:siswa,guru,umum',
             'name'             => 'required|string|max:100',
-            'nis_nip'          => 'required|string|max:30|unique:members,nis_nip,' . $member->id,
+            'nis_nip'          => 'nullable|string|max:30|unique:members,nis_nip,' . $member->id,
             'class_id'         => 'required_if:type,siswa|nullable|exists:classes,id',
             'jenis_kelamin'    => 'nullable|in:L,P',
             'nisn'             => 'nullable|string|max:20',
@@ -65,6 +70,11 @@ class MemberController extends Controller
             'address'          => 'nullable|string|max:255',
             'phone'            => 'nullable|string|max:20',
         ]);
+
+        // Wajib NIS/NIP hanya untuk siswa dan guru
+        if (in_array($data['type'], ['siswa', 'guru']) && empty($data['nis_nip'])) {
+            return back()->withErrors(['nis_nip' => 'NIS/NIP wajib diisi untuk tipe siswa atau guru.'])->withInput();
+        }
 
         $member->update($data);
 

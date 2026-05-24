@@ -210,6 +210,10 @@
                 <input type="radio" v-model="addForm.type" value="guru" class="text-emerald-600 focus:ring-emerald-500" />
                 <span class="text-sm font-medium text-gray-700">Guru / Karyawan</span>
               </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" v-model="addForm.type" value="umum" class="text-emerald-600 focus:ring-emerald-500" />
+                <span class="text-sm font-medium text-gray-700">Umum</span>
+              </label>
             </div>
           </div>
 
@@ -221,9 +225,10 @@
                 class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-500" />
               <p v-if="addForm.errors.name" class="text-xs text-red-500 mt-1">{{ addForm.errors.name }}</p>
             </div>
-            <div>
+            <!-- NIS/NIP hanya untuk siswa dan guru -->
+            <div v-if="addForm.type !== 'umum'">
               <label class="block text-sm font-medium text-gray-700 mb-1">{{ addForm.type === 'siswa' ? 'NIS' : 'NIP' }} <span class="text-red-500">*</span></label>
-              <input v-model="addForm.nis_nip" type="text" required :placeholder="addForm.type === 'siswa' ? '12345' : '19800101...'"
+              <input v-model="addForm.nis_nip" type="text" :required="addForm.type !== 'umum'" :placeholder="addForm.type === 'siswa' ? '12345' : '19800101...'"
                 class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-500" />
               <p v-if="addForm.errors.nis_nip" class="text-xs text-red-500 mt-1">{{ addForm.errors.nis_nip }}</p>
             </div>
@@ -662,7 +667,7 @@ const addForm = useForm({
 function openAddModal() {
   editingMember.value = null
   addForm.reset()
-  addForm.type = activeType.value === 'guru' ? 'guru' : 'siswa'
+  addForm.type = activeType.value === 'guru' ? 'guru' : activeType.value === 'umum' ? 'umum' : 'siswa'
   showAddModal.value = true
 }
 
