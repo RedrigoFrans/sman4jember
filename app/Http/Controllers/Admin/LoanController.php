@@ -162,7 +162,45 @@ class LoanController extends Controller
     public function extend(Loan $loan, Request $request)
     {
         try {
-            $this->loanService->extend($loan, $request->user());
+            $loan = $this->loanService->extend($loan, $request->user());
+
+            // -------------------------------
+            // KIRIM PUSH NOTIFICATION (FCM)
+            // -------------------------------
+            try {
+                $fcm = app(\App\Services\FcmService::class);
+                $title = 'Perpanjangan Masa Pinjam';
+                
+                $newDueDateStr = $loan->extended_due_date 
+                    ? \Carbon\Carbon::parse($loan->extended_due_date)->translatedFormat('d F Y')
+                    : \Carbon\Carbon::parse($loan->due_date)->translatedFormat('d F Y');
+                    
+                $body = "Masa peminjaman buku Anda telah diperpanjang. Tenggat waktu pengembalian yang baru adalah $newDueDateStr.";
+
+                // Simpan notifikasi ke database
+                \App\Models\MemberNotification::create([
+                    'member_id'  => $loan->member_id,
+                    'type'       => 'perpanjangan_peminjaman',
+                    'title'      => $title,
+                    'body'       => $body,
+                    'data'       => ['loan_id' => (string) $loan->id],
+                    'is_read'    => false,
+                    'sent_at'    => now(),
+                ]);
+
+                // Ambil token perangkat milik member yang meminjam
+                $tokens = \App\Models\FcmToken::where('user_id', $loan->member->user_id)
+                    ->pluck('token')
+                    ->toArray();
+
+                if (!empty($tokens)) {
+                    $fcm->sendMultiple($tokens, $title, $body, ['loan_id' => (string) $loan->id]);
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Gagal kirim push notification perpanjangan: ' . $e->getMessage());
+            }
+            // -------------------------------
+
             return back()->with('success', 'Peminjaman berhasil diperpanjang.');
         }
         catch (\Exception $e) {

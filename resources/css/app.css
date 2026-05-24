@@ -196,6 +196,32 @@
 
         --color-inverse-surface: #f1f5f9;
         --color-inverse-on-surface: #020617;
+
+        /* Badge color overrides for dark mode readability */
+        --color-amber-50: #1c1200;
+        --color-amber-100: #78350f;
+        --color-amber-700: #fde68a;
+        --color-amber-800: #fef3c7;
+        
+        --color-indigo-50: #064e3b;
+        --color-indigo-100: #065f46;
+        --color-indigo-700: #a7f3d0;
+        --color-indigo-800: #d1fae5;
+        
+        --color-red-50: #450a0a;
+        --color-red-100: #7f1d1d;
+        --color-red-700: #fecaca;
+        --color-red-800: #fee2e2;
+
+        --color-gray-50: #0f172a;
+        --color-gray-100: #1e293b;
+        --color-gray-600: #cbd5e1;
+        --color-gray-700: #f1f5f9;
+        
+        --color-slate-50: #0f172a;
+        --color-slate-100: #1e293b;
+        --color-slate-600: #cbd5e1;
+        --color-slate-700: #f1f5f9;
     }
 }
 

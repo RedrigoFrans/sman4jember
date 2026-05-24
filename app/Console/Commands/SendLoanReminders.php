@@ -47,7 +47,7 @@ class SendLoanReminders extends Command
             }
 
             $dueDate  = Carbon::parse($dueDate)->startOfDay();
-            $diff     = $today->diffInDays($dueDate, false); // negatif = sudah lewat
+            $diff     = (int) $today->diffInDays($dueDate, false); // negatif = sudah lewat
             $member   = $item->loan->member;
             $bookTitle = $item->copy?->book?->title ?? 'Buku';
 
