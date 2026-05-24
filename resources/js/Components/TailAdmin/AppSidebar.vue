@@ -111,6 +111,7 @@ import PieChartIcon from '@/Components/TailAdminIcons/PieChartIcon.vue'
 
 const page = usePage()
 const { isExpanded, isMobileOpen, isHovered } = useSidebar()
+const isAdmin = computed(() => page.props.auth?.user?.role === 'admin')
 
 const menuGroups = computed(() => [
   {
@@ -142,7 +143,7 @@ const menuGroups = computed(() => [
       { name: 'Buku', route: 'books.index', icon: BookIcon },
       { name: 'Data Kelas', route: 'kelas.index', icon: TableIcon },
       { name: 'Anggota', route: 'members.index', icon: UserGroupIcon, badge: page.props.pendingCount },
-      { name: 'Pengaturan', route: 'settings.index', icon: SettingsIcon },
+      ...(isAdmin.value ? [{ name: 'Pengaturan', route: 'settings.index', icon: SettingsIcon }] : []),
     ],
   },
 ])
