@@ -40,4 +40,8 @@ return [
         'url'   => env('FONNTE_URL', 'https://api.fonnte.com/send'),
     ],
 
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY', 'AIzaSyAKSZuL98Kxn0PmctJmknL3kpScHIwnNrg'),
+    ],
+
 ];

@@ -43,4 +43,16 @@ class Member extends Model
     // Scope
     public function scopeAktif($query)   { return $query->where('status', 'aktif'); }
     public function scopePending($query) { return $query->where('status', 'pending'); }
+
+    /**
+     * Override toArray to ensure nik falls back to member_code or nis_nip if empty.
+     */
+    public function toArray()
+    {
+        $array = parent::toArray();
+        if (empty($array['nik'])) {
+            $array['nik'] = $this->member_code ?: ($this->nis_nip ?: '');
+        }
+        return $array;
+    }
 }
