@@ -38,8 +38,8 @@
         <div class="flex items-center gap-2 2xsm:gap-3">
           <ThemeToggler />
           
-          <!-- Notification Dropdown -->
-          <NotificationDropdown />
+          <!-- Notification Dropdown (admin only) -->
+          <NotificationDropdown v-if="isAdmin" />
         </div>
 
         <UserMenu />
@@ -49,8 +49,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { Link } from '@inertiajs/vue3'
+import { ref, computed } from 'vue'
+import { Link, usePage } from '@inertiajs/vue3'
 import { useSidebar } from '@/Composables/useSidebar'
 import ThemeToggler from './ThemeToggler.vue'
 import SearchBar from './SearchBar.vue'
@@ -58,6 +58,9 @@ import UserMenu from './UserMenu.vue'
 import NotificationDropdown from './NotificationDropdown.vue'
 import MenuIcon from '@/Components/TailAdminIcons/MenuIcon.vue'
 import HorizontalDots from '@/Components/TailAdminIcons/HorizontalDots.vue'
+
+const page = usePage()
+const isAdmin = computed(() => page.props.auth?.user?.role === 'admin')
 
 const { toggleSidebar, toggleMobileSidebar, isMobileOpen } = useSidebar()
 

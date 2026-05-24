@@ -125,15 +125,15 @@ Route::middleware('auth')->group(function () {
             Route::get('/laporan/denda', [ReportController::class, 'fineReport'])->name('reports.fines');
             Route::get('/laporan/presensi', [ReportController::class, 'attendanceReport'])->name('reports.attendance');
 
-        // Settings (admin only)
+        // Settings & Notifications (admin only)
         Route::middleware('role:admin')->group(function () {
             Route::get('/settings', [SettingController::class , 'index'])->name('settings.index');
             Route::post('/settings', [SettingController::class , 'update'])->name('settings.update');
-        });
 
-        // Notifications
-        Route::post('/notifications/{notification}/read', [\App\Http\Controllers\Admin\NotificationController::class, 'markAsRead'])->name('notifications.read');
-        Route::post('/notifications/read-all', [\App\Http\Controllers\Admin\NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+            // Notifications
+            Route::post('/notifications/{notification}/read', [\App\Http\Controllers\Admin\NotificationController::class, 'markAsRead'])->name('notifications.read');
+            Route::post('/notifications/read-all', [\App\Http\Controllers\Admin\NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+        });
 
     });
 });

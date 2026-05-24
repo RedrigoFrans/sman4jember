@@ -28,7 +28,7 @@ class HandleInertiaRequests extends Middleware
                     'email' => $user->email,
                     'role'  => $user->role,
                 ] : null,
-                'notifications' => $user && in_array($user->role, ['admin', 'petugas']) ? [
+                'notifications' => $user && $user->role === 'admin' ? [
                     'unreadCount' => \App\Models\AdminNotification::where('is_read', false)->count(),
                     'latest'      => \App\Models\AdminNotification::where('is_read', false)->latest()->take(5)->get(),
                 ] : null,

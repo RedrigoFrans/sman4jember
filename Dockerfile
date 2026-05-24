@@ -91,12 +91,14 @@ COPY --from=composer-builder /app/vendor ./vendor
 COPY --from=frontend-builder /app/public/build ./public/build
 
 # Set permissions
-RUN chown -R www-data:www-data \
+RUN mkdir -p public/covers \
+    && chown -R www-data:www-data \
         storage \
         bootstrap/cache \
+        public/covers \
         /var/lib/nginx \
         /var/log/nginx \
-    && chmod -R 775 storage bootstrap/cache
+    && chmod -R 775 storage bootstrap/cache public/covers
 
 # Buat direktori untuk Supervisor log
 RUN mkdir -p /var/log/supervisor
