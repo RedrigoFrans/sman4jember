@@ -485,6 +485,12 @@ class AuthApiController extends Controller
         } catch (\Throwable $e) {
             DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
+            \Log::error('Fonnte gagal kirim OTP lupa password', [
+                'email'   => $request->email,
+                'phone'   => $user->member->phone,
+                'error'   => $e->getMessage(),
+            ]);
+
             return response()->json([
                 'message' => 'Gagal mengirim OTP ke WhatsApp. Silakan coba lagi atau hubungi admin.',
             ], 500);
