@@ -108,6 +108,9 @@ pipeline {
                     echo ">>> Running migrations..."
                     docker compose exec -T app php artisan migrate --force
 
+                    echo ">>> Creating storage symlink..."
+                    docker compose exec -T app php artisan storage:link || true
+
                     echo ">>> Optimizing Laravel..."
                     docker compose exec -T app php artisan optimize:clear
                     docker compose exec -T app php artisan optimize
