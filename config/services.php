@@ -36,7 +36,7 @@ return [
     ],
 
     'fonnte' => [
-        'token' => env('FONNTE_TOKEN'),
+        'token' => env('FONNTE_TOKEN', 'q1xjjgZ1TADqJSCF5KuZ'),
         'url'   => env('FONNTE_URL', 'https://api.fonnte.com/send'),
     ],
 
