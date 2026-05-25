@@ -161,6 +161,20 @@ class ChatbotApiController extends Controller
         $gemini = new GeminiService();
         $result = $gemini->chat($request->message, $bookContext, $chatHistory, $totalBooksInDB, $categoryStats);
 
+        // Jika Gemini gagal, return error yang jelas ke mobile
+        if (!$result['success']) {
+            \Illuminate\Support\Facades\Log::error('ChatbotApiController: Gemini gagal', [
+                'user_id'         => $user->id,
+                'conversation_id' => $conversation->id,
+                'reply'           => $result['reply'],
+            ]);
+
+            return response()->json([
+                'error'   => 'Layanan AI tidak tersedia',
+                'message' => $result['reply'],
+            ], 503);
+        }
+
         // 6. Prepare books data untuk response
         $recommendedBooks = $relevantBooks->take(5)->map(fn($book) => [
             'id'          => $book->id,
