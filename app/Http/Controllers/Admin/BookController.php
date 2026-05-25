@@ -7,6 +7,7 @@ use App\Models\Book;
 use App\Models\Category;
 use App\Models\BookCopy;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class BookController extends Controller
@@ -74,8 +75,8 @@ class BookController extends Controller
         if ($request->hasFile('cover_image')) {
             $file     = $request->file('cover_image');
             $filename = uniqid('cover_') . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('covers'), $filename);
-            $data['cover_image'] = 'covers/' . $filename;
+            $path     = $file->storeAs('covers', $filename, 'public');
+            $data['cover_image'] = $path;
         } else {
             unset($data['cover_image']);
         }
@@ -132,20 +133,18 @@ class BookController extends Controller
         // Hapus cover jika diminta
         if ($request->boolean('remove_cover') && $book->cover_image) {
             if (!str_starts_with($book->cover_image, 'http')) {
-                $oldPath = public_path($book->cover_image);
-                if (file_exists($oldPath)) unlink($oldPath);
+                Storage::disk('public')->delete($book->cover_image);
             }
             $data['cover_image'] = null;
         } elseif ($request->hasFile('cover_image')) {
             // Hapus file lama jika bukan URL
             if ($book->cover_image && !str_starts_with($book->cover_image, 'http')) {
-                $oldPath = public_path($book->cover_image);
-                if (file_exists($oldPath)) unlink($oldPath);
+                Storage::disk('public')->delete($book->cover_image);
             }
             $file     = $request->file('cover_image');
             $filename = uniqid('cover_') . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('covers'), $filename);
-            $data['cover_image'] = 'covers/' . $filename;
+            $path     = $file->storeAs('covers', $filename, 'public');
+            $data['cover_image'] = $path;
         } else {
             unset($data['cover_image']);
         }
