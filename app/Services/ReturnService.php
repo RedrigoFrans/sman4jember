@@ -147,6 +147,7 @@ class ReturnService
 
                 // 2. Kirim FCM push notification ke device member
                 $tokens = FcmToken::where('user_id', $member->user_id ?? null)
+                    ->orWhereHas('user', fn($q) => $q->whereHas('member', fn($q2) => $q2->where('id', $member->id)))
                     ->pluck('token')
                     ->toArray();
 
@@ -157,6 +158,44 @@ class ReturnService
                         'total'   => (string) $totalFine,
                     ]);
                     Log::info("[ReturnService] FCM denda_baru sent to member {$member->id}, tokens: " . count($tokens));
+                } else {
+                    Log::info("[ReturnService] Member {$member->id} has no FCM token, skipped push.");
+                }
+            }
+        } else {
+            // Pengembalian tanpa denda (Pengembalian Berhasil)
+            $member = $loanItem->loan->member ?? null;
+            $bookTitle = $loanItem->copy->book->title ?? 'Buku';
+            $title = '✅ Pengembalian Berhasil';
+            $body = "Buku \"{$bookTitle}\" telah berhasil dikembalikan tepat waktu dalam kondisi baik. Terima kasih!";
+
+            if ($member) {
+                // 1. Simpan ke database (in-app)
+                MemberNotification::create([
+                    'member_id'  => $member->id,
+                    'type'       => 'pengembalian_berhasil',
+                    'title'      => $title,
+                    'body'       => $body,
+                    'data'       => [
+                        'loan_id'    => (string) $loanItem->loan_id,
+                    ],
+                    'is_read'    => false,
+                    'sent_at'    => now(),
+                    'created_at' => now(),
+                ]);
+
+                // 2. Kirim FCM push notification
+                $tokens = FcmToken::where('user_id', $member->user_id ?? null)
+                    ->orWhereHas('user', fn($q) => $q->whereHas('member', fn($q2) => $q2->where('id', $member->id)))
+                    ->pluck('token')
+                    ->toArray();
+
+                if (!empty($tokens)) {
+                    $this->fcm->sendMultiple($tokens, $title, $body, [
+                        'type'    => 'pengembalian_berhasil',
+                        'loan_id' => (string) $loanItem->loan_id,
+                    ]);
+                    Log::info("[ReturnService] FCM pengembalian_berhasil sent to member {$member->id}, tokens: " . count($tokens));
                 } else {
                     Log::info("[ReturnService] Member {$member->id} has no FCM token, skipped push.");
                 }

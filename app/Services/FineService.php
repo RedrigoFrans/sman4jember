@@ -128,6 +128,7 @@ class FineService
 
         // 2. FCM push notification
         $tokens = FcmToken::where('user_id', $member->user_id ?? null)
+            ->orWhereHas('user', fn($q) => $q->whereHas('member', fn($q2) => $q2->where('id', $member->id)))
             ->pluck('token')
             ->toArray();
 
