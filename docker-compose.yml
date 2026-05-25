@@ -13,6 +13,10 @@ volumes:
     driver: local
   storage-data:
     driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
 
 services:
   # ----------------------------------------------------------
@@ -191,3 +195,77 @@ services:
         condition: service_healthy
     networks:
       - devora-network
+
+  # ----------------------------------------------------------
+  # Prometheus (Metrics Collector)
+  # ----------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: devora_prometheus
+    restart: unless-stopped
+    volumes:
+      - ./docker/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "9090:9090"
+    networks:
+      - devora-network
+
+  # ----------------------------------------------------------
+  # Grafana (Metrics Visualizer)
+  # ----------------------------------------------------------
+  grafana:
+    image: grafana/grafana:latest
+    container_name: devora_grafana
+    restart: unless-stopped
+    volumes:
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - devora-network
+
+  # ----------------------------------------------------------
+  # Node Exporter (Host Metrics)
+  # ----------------------------------------------------------
+  node-exporter:
+    image: prom/node-exporter:v1.8.1
+    container_name: devora_node_exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($|/)'
+    networks:
+      - devora-network
+
+  # ----------------------------------------------------------
+  # cAdvisor (Container Metrics)
+  # ----------------------------------------------------------
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: devora_cadvisor
+    restart: unless-stopped
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    networks:
+      - devora-network
+
