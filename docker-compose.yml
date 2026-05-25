@@ -52,6 +52,9 @@ services:
       - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
       - MAIL_FROM_NAME=${MAIL_FROM_NAME:-DevoraV2}
       - GOOGLE_BOOKS_API_KEY=${GOOGLE_BOOKS_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - FONNTE_TOKEN=${FONNTE_TOKEN}
+      - FONNTE_URL=${FONNTE_URL:-https://api.fonnte.com/send}
     volumes:
       - storage-data:/var/www/html/storage/app
     depends_on:
