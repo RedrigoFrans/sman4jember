@@ -88,6 +88,13 @@ pipeline {
                     # Copy docker-compose.yml ke VPS deploy directory
                     cp ${COMPOSE_FILE} ${DEPLOY_DIR}/
 
+                    # Clean up dummy directory if created incorrectly by docker daemon and copy prometheus.yml
+                    if [ -d "${DEPLOY_DIR}/docker/monitoring/prometheus.yml" ]; then
+                        rm -rf "${DEPLOY_DIR}/docker/monitoring/prometheus.yml"
+                    fi
+                    mkdir -p ${DEPLOY_DIR}/docker/monitoring
+                    cp docker/monitoring/prometheus.yml ${DEPLOY_DIR}/docker/monitoring/prometheus.yml
+
                     # Copy template .env jika belum ada .env di deploy directory
                     if [ ! -f "${DEPLOY_DIR}/.env" ]; then
                         if [ -f ".env.production" ]; then
