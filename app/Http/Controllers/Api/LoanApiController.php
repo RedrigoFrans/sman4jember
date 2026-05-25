@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class LoanApiController extends Controller
 {
@@ -34,7 +35,7 @@ class LoanApiController extends Controller
                 'book' => [
                     'title' => $book?->title ?? 'Buku Tidak Diketahui',
                     'author' => $book?->author ?? '-',
-                    'cover_image' => $book && $book->cover_image ? (str_starts_with($book->cover_image, 'http') ? $book->cover_image : asset($book->cover_image)) : null,
+                    'cover_image' => $book && $book->cover_image ? (str_starts_with($book->cover_image, 'http') ? $book->cover_image : Storage::url($book->cover_image)) : null,
                 ]
             ];
         });

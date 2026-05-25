@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class BookApiController extends Controller
 {
@@ -39,7 +40,7 @@ class BookApiController extends Controller
                 'id' => $book->id,
                 'title' => $book->title,
                 'author' => $book->author,
-                'cover_image' => $book->cover_image ? (str_starts_with($book->cover_image, 'http') ? $book->cover_image : asset($book->cover_image)) : null,
+                'cover_image' => $book->cover_image ? (str_starts_with($book->cover_image, 'http') ? $book->cover_image : Storage::url($book->cover_image)) : null,
                 'publisher' => $book->publisher,
                 'category' => ['name' => $book->category?->name ?? 'Uncategorized'],
                 'synopsis' => $book->description,
@@ -63,7 +64,7 @@ class BookApiController extends Controller
                 'id' => $book->id,
                 'title' => $book->title,
                 'author' => $book->author,
-                'cover_image' => $book->cover_image ? (str_starts_with($book->cover_image, 'http') ? $book->cover_image : asset($book->cover_image)) : null,
+                'cover_image' => $book->cover_image ? (str_starts_with($book->cover_image, 'http') ? $book->cover_image : Storage::url($book->cover_image)) : null,
                 'publisher' => $book->publisher,
                 'category' => ['name' => $book->category?->name ?? 'Uncategorized'],
                 'synopsis' => $book->description,
