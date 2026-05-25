@@ -55,8 +55,11 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - FONNTE_TOKEN=${FONNTE_TOKEN}
       - FONNTE_URL=${FONNTE_URL:-https://api.fonnte.com/send}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID:-devora-app}
+      - FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS:-storage/app/firebase-credentials.json}
     volumes:
       - storage-data:/var/www/html/storage/app
+      - ./firebase-credentials.json:/var/www/html/storage/app/firebase-credentials.json:ro
     depends_on:
       mysql:
         condition: service_healthy
@@ -139,8 +142,11 @@ services:
       - MAIL_PORT=${MAIL_PORT}
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID:-devora-app}
+      - FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS:-storage/app/firebase-credentials.json}
     volumes:
       - storage-data:/var/www/html/storage/app
+      - ./firebase-credentials.json:/var/www/html/storage/app/firebase-credentials.json:ro
     depends_on:
       mysql:
         condition: service_healthy
@@ -175,8 +181,11 @@ services:
       - DB_USERNAME=${DB_USERNAME:-devora_user}
       - DB_PASSWORD=${DB_PASSWORD}
       - REDIS_HOST=redis
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID:-devora-app}
+      - FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS:-storage/app/firebase-credentials.json}
     volumes:
       - storage-data:/var/www/html/storage/app
+      - ./firebase-credentials.json:/var/www/html/storage/app/firebase-credentials.json:ro
     depends_on:
       mysql:
         condition: service_healthy
