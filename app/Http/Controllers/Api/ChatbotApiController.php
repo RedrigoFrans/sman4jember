@@ -9,6 +9,7 @@ use App\Models\ChatMessage;
 use App\Services\GeminiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class ChatbotApiController extends Controller
 {
