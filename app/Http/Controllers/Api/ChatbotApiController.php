@@ -181,7 +181,7 @@ class ChatbotApiController extends Controller
             'title'       => $book->title,
             'author'      => $book->author,
             'cover_image' => $book->cover_image 
-                ? (str_starts_with($book->cover_image, 'http') ? $book->cover_image : asset($book->cover_image)) 
+                ? (str_starts_with($book->cover_image, 'http') ? $book->cover_image : url(Storage::url($book->cover_image))) 
                 : null,
             'category'    => $book->category?->name ?? 'Uncategorized',
         ])->toArray();

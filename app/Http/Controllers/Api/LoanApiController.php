@@ -35,7 +35,7 @@ class LoanApiController extends Controller
                 'book' => [
                     'title' => $book?->title ?? 'Buku Tidak Diketahui',
                     'author' => $book?->author ?? '-',
-                    'cover_image' => $book && $book->cover_image ? (str_starts_with($book->cover_image, 'http') ? $book->cover_image : Storage::url($book->cover_image)) : null,
+                    'cover_image' => $book && $book->cover_image ? (str_starts_with($book->cover_image, 'http') ? $book->cover_image : url(Storage::url($book->cover_image))) : null,
                 ]
             ];
         });
