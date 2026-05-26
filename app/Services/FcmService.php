@@ -78,12 +78,18 @@ class FcmService
      */
     private function getAccessToken(): ?string
     {
-        if (!file_exists($this->credentialsPath)) {
-            Log::error('Firebase credentials file not found: ' . $this->credentialsPath);
-            return null;
+        $credentials = null;
+
+        if (env('FIREBASE_CREDENTIALS_BASE64')) {
+            $credentials = json_decode(base64_decode(env('FIREBASE_CREDENTIALS_BASE64')), true);
+        } elseif (file_exists($this->credentialsPath)) {
+            $credentials = json_decode(file_get_contents($this->credentialsPath), true);
         }
 
-        $credentials = json_decode(file_get_contents($this->credentialsPath), true);
+        if (!$credentials) {
+            Log::error('Firebase credentials missing. File not found: ' . $this->credentialsPath . ' and FIREBASE_CREDENTIALS_BASE64 is empty.');
+            return null;
+        }
 
         $now = time();
         $payload = [
