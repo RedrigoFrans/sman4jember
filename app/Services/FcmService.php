@@ -22,9 +22,11 @@ class FcmService
 
         if (env('FIREBASE_CREDENTIALS_BASE64')) {
             $base64 = str_replace(' ', '+', env('FIREBASE_CREDENTIALS_BASE64'));
-            $this->credentials = json_decode(base64_decode($base64), true);
+            $decoded = json_decode(base64_decode($base64), true);
+            $this->credentials = is_array($decoded) ? $decoded : null;
         } elseif (is_file($credentialsPath)) {
-            $this->credentials = json_decode(file_get_contents($credentialsPath), true);
+            $decoded = json_decode(file_get_contents($credentialsPath), true);
+            $this->credentials = is_array($decoded) ? $decoded : null;
         }
 
         if (!$this->credentials) {

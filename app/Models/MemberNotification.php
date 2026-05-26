@@ -7,7 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 class MemberNotification extends Model
 {
     protected $table = 'member_notifications';
-    public const UPDATED_AT = null;
+    public $timestamps = false;
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            $model->created_at = $model->created_at ?: now();
+        });
+    }
 
     protected $fillable = [
         'member_id', 'type', 'title', 'body', 'data',
