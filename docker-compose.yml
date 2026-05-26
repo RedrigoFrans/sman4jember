@@ -61,6 +61,7 @@ services:
       - FONNTE_URL=${FONNTE_URL:-https://api.fonnte.com/send}
       - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID:-devora-app}
       - FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS:-storage/app/firebase-credentials.json}
+      - FIREBASE_CREDENTIALS_BASE64=${FIREBASE_CREDENTIALS_BASE64}
     volumes:
       - storage-data:/var/www/html/storage/app
       - ./firebase-credentials.json:/var/www/html/storage/app/firebase-credentials.json:ro
@@ -148,6 +149,7 @@ services:
       - MAIL_PASSWORD=${MAIL_PASSWORD}
       - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID:-devora-app}
       - FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS:-storage/app/firebase-credentials.json}
+      - FIREBASE_CREDENTIALS_BASE64=${FIREBASE_CREDENTIALS_BASE64}
     volumes:
       - storage-data:/var/www/html/storage/app
       - ./firebase-credentials.json:/var/www/html/storage/app/firebase-credentials.json:ro
@@ -187,6 +189,7 @@ services:
       - REDIS_HOST=redis
       - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID:-devora-app}
       - FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS:-storage/app/firebase-credentials.json}
+      - FIREBASE_CREDENTIALS_BASE64=${FIREBASE_CREDENTIALS_BASE64}
     volumes:
       - storage-data:/var/www/html/storage/app
       - ./firebase-credentials.json:/var/www/html/storage/app/firebase-credentials.json:ro

@@ -81,7 +81,8 @@ class FcmService
         $credentials = null;
 
         if (env('FIREBASE_CREDENTIALS_BASE64')) {
-            $credentials = json_decode(base64_decode(env('FIREBASE_CREDENTIALS_BASE64')), true);
+            $base64 = str_replace(' ', '+', env('FIREBASE_CREDENTIALS_BASE64'));
+            $credentials = json_decode(base64_decode($base64), true);
         } elseif (file_exists($this->credentialsPath)) {
             $credentials = json_decode(file_get_contents($this->credentialsPath), true);
         }
