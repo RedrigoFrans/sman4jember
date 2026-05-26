@@ -111,6 +111,11 @@
               />
             </div>
             <p v-if="otpForm.errors.otp" class="text-error text-xs text-center mt-2">{{ otpForm.errors.otp }}</p>
+            <div v-if="Object.keys(form.errors).length > 0" class="mt-3 bg-error/10 border border-error/20 p-3 rounded-xl">
+              <p class="text-xs text-error text-center font-medium">
+                {{ Object.values(form.errors)[0] }}
+              </p>
+            </div>
           </div>
 
           <div class="text-center">
