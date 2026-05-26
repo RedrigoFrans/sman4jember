@@ -8,12 +8,27 @@ use Illuminate\Support\Facades\Log;
 class FcmService
 {
     private string $projectId;
-    private string $credentialsPath;
+    private ?array $credentials = null;
 
     public function __construct()
     {
-        $this->projectId      = env('FIREBASE_PROJECT_ID', '');
-        $this->credentialsPath = base_path(env('FIREBASE_CREDENTIALS', 'storage/app/firebase-credentials.json'));
+        $this->loadCredentials();
+        $this->projectId = env('FIREBASE_PROJECT_ID', $this->credentials['project_id'] ?? '');
+    }
+
+    private function loadCredentials(): void
+    {
+        $credentialsPath = base_path(env('FIREBASE_CREDENTIALS', 'storage/app/firebase-credentials.json'));
+
+        if (env('FIREBASE_CREDENTIALS_BASE64')) {
+            $this->credentials = json_decode(base64_decode(env('FIREBASE_CREDENTIALS_BASE64')), true);
+        } elseif (file_exists($credentialsPath)) {
+            $this->credentials = json_decode(file_get_contents($credentialsPath), true);
+        }
+
+        if (!$this->credentials) {
+            Log::error('Firebase credentials missing. File not found: ' . $credentialsPath . ' and FIREBASE_CREDENTIALS_BASE64 is empty.');
+        }
     }
 
     /**
@@ -21,6 +36,11 @@ class FcmService
      */
     public function send(string $fcmToken, string $title, string $body, array $data = []): bool
     {
+        if (empty($this->projectId)) {
+            Log::error('FCM send failed: FIREBASE_PROJECT_ID is empty.');
+            return false;
+        }
+
         try {
             $accessToken = $this->getAccessToken();
             if (!$accessToken) return false;
@@ -78,29 +98,20 @@ class FcmService
      */
     private function getAccessToken(): ?string
     {
-        $credentials = null;
-
-        if (env('FIREBASE_CREDENTIALS_BASE64')) {
-            $credentials = json_decode(base64_decode(env('FIREBASE_CREDENTIALS_BASE64')), true);
-        } elseif (file_exists($this->credentialsPath)) {
-            $credentials = json_decode(file_get_contents($this->credentialsPath), true);
-        }
-
-        if (!$credentials) {
-            Log::error('Firebase credentials missing. File not found: ' . $this->credentialsPath . ' and FIREBASE_CREDENTIALS_BASE64 is empty.');
+        if (!$this->credentials) {
             return null;
         }
 
         $now = time();
         $payload = [
-            'iss'   => $credentials['client_email'],
+            'iss'   => $this->credentials['client_email'],
             'scope' => 'https://www.googleapis.com/auth/firebase.messaging',
             'aud'   => 'https://oauth2.googleapis.com/token',
             'iat'   => $now,
             'exp'   => $now + 3600,
         ];
 
-        $jwt = $this->buildJwt($payload, $credentials['private_key']);
+        $jwt = $this->buildJwt($payload, $this->credentials['private_key']);
 
         $response = Http::asForm()->post('https://oauth2.googleapis.com/token', [
             'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
