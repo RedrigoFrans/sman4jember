@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class MemberNotification extends Model
 {
     protected $table = 'member_notifications';
-    public $timestamps = false;
+    public const UPDATED_AT = null;
 
     protected $fillable = [
         'member_id', 'type', 'title', 'body', 'data',
