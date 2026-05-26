@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 class GeminiService
 {
     protected string $apiKey;
-    protected string $model = 'gemini-2.0-flash';
+    protected string $model = 'gemini-2.0-flash-lite';
 
 
     public function __construct()
