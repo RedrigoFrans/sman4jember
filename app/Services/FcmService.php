@@ -21,8 +21,9 @@ class FcmService
         $credentialsPath = base_path(env('FIREBASE_CREDENTIALS', 'storage/app/firebase-credentials.json'));
 
         if (env('FIREBASE_CREDENTIALS_BASE64')) {
-            $this->credentials = json_decode(base64_decode(env('FIREBASE_CREDENTIALS_BASE64')), true);
-        } elseif (file_exists($credentialsPath)) {
+            $base64 = str_replace(' ', '+', env('FIREBASE_CREDENTIALS_BASE64'));
+            $this->credentials = json_decode(base64_decode($base64), true);
+        } elseif (is_file($credentialsPath)) {
             $this->credentials = json_decode(file_get_contents($credentialsPath), true);
         }
 
