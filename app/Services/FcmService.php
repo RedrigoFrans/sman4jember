@@ -57,7 +57,7 @@ class FcmService
                 'android'      => [
                     'notification' => [
                         'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-                        'channel_id'   => 'devora_notifications',
+                        'channel_id'   => 'devora_notifications_v2',
                     ],
                 ],
                 'apns' => [
