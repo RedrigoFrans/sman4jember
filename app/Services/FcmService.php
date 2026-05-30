@@ -78,6 +78,17 @@ class FcmService
                 return true;
             }
 
+            $responseBody = $response->json();
+            if ($response->status() === 404 && isset($responseBody['error']['details'])) {
+                foreach ($responseBody['error']['details'] as $detail) {
+                    if (($detail['errorCode'] ?? '') === 'UNREGISTERED') {
+                        \App\Models\FcmToken::where('token', $fcmToken)->delete();
+                        Log::info("Deleted unregistered/invalid FCM token: " . $fcmToken);
+                        break;
+                    }
+                }
+            }
+
             Log::warning('FCM send failed', ['status' => $response->status(), 'body' => $response->body()]);
             return false;
         } catch (\Throwable $e) {
