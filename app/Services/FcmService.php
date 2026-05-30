@@ -48,30 +48,35 @@ class FcmService
             $accessToken = $this->getAccessToken();
             if (!$accessToken) return false;
 
-            $response = Http::withToken($accessToken)
-                ->post("https://fcm.googleapis.com/v1/projects/{$this->projectId}/messages:send", [
-                    'message' => [
-                        'token'        => $fcmToken,
-                        'notification' => [
-                            'title' => $title,
-                            'body'  => $body,
-                        ],
-                        'data'         => array_map('strval', $data),
-                        'android'      => [
-                            'notification' => [
-                                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-                                'channel_id'   => 'devora_notifications',
-                            ],
-                        ],
-                        'apns' => [
-                            'payload' => [
-                                'aps' => [
-                                    'sound' => 'default',
-                                    'badge' => 1,
-                                ],
-                            ],
+            $messagePayload = [
+                'token'        => $fcmToken,
+                'notification' => [
+                    'title' => $title,
+                    'body'  => $body,
+                ],
+                'android'      => [
+                    'notification' => [
+                        'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                        'channel_id'   => 'devora_notifications',
+                    ],
+                ],
+                'apns' => [
+                    'payload' => [
+                        'aps' => [
+                            'sound' => 'default',
+                            'badge' => 1,
                         ],
                     ],
+                ],
+            ];
+
+            if (!empty($data)) {
+                $messagePayload['data'] = array_map('strval', $data);
+            }
+
+            $response = Http::withToken($accessToken)
+                ->post("https://fcm.googleapis.com/v1/projects/{$this->projectId}/messages:send", [
+                    'message' => $messagePayload
                 ]);
 
             if ($response->successful()) {
