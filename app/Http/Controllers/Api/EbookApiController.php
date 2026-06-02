@@ -86,7 +86,7 @@ class EbookApiController extends Controller
 
             $books = $books
                 ->filter(function ($book) {
-                    return !empty($book['id']) && !empty($book['title']);
+                    return !empty($book['id']) && !empty($book['title']) && $this->isSafeBook($book);
                 })
                 ->unique(function ($book) {
                     return strtolower(($book['source'] ?? '') . '-' . ($book['id'] ?? ''));
@@ -381,26 +381,34 @@ class EbookApiController extends Controller
     {
         try {
             if ($source === 'internet_archive') {
-                return $this->showInternetArchive($externalId);
+                $res = $this->showInternetArchive($externalId);
+            } elseif ($source === 'google_books') {
+                $res = $this->showGoogleBooks($externalId);
+            } elseif ($source === 'gutendex') {
+                $res = $this->showGutendex($externalId);
+            } elseif ($source === 'open_library') {
+                $res = $this->showOpenLibrary($externalId);
+            } else {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Source ebook tidak dikenali',
+                    'data' => null,
+                ], 404);
             }
 
-            if ($source === 'google_books') {
-                return $this->showGoogleBooks($externalId);
+            // Sensor konten jika response sukses dan berisi data e-book
+            if ($res->getStatusCode() === 200) {
+                $content = json_decode($res->getContent(), true);
+                if (isset($content['data']) && !$this->isSafeBook($content['data'])) {
+                    return response()->json([
+                        'status' => 403,
+                        'message' => 'E-Book ini mengandung konten dewasa yang tidak diperbolehkan di perpustakaan sekolah.',
+                        'data' => null,
+                    ], 403);
+                }
             }
 
-            if ($source === 'gutendex') {
-                return $this->showGutendex($externalId);
-            }
-
-            if ($source === 'open_library') {
-                return $this->showOpenLibrary($externalId);
-            }
-
-            return response()->json([
-                'status' => 404,
-                'message' => 'Source ebook tidak dikenali',
-                'data' => null,
-            ], 404);
+            return $res;
         } catch (\Throwable $e) {
             Log::warning('Detail ebook gagal diakses', [
                 'source' => $source,
@@ -681,5 +689,59 @@ class EbookApiController extends Controller
         $text = trim((string) $value);
 
         return $text !== '' ? $text : '-';
+    }
+
+    /**
+     * Memeriksa apakah e-book aman (tidak mengandung konten dewasa/seksual).
+     *
+     * @param array $book
+     * @return bool
+     */
+    private function isSafeBook(array $book): bool
+    {
+        $blacklist = [
+            // English keywords
+            'sex', 'sexx', 'erotic', 'erotica', 'porn', 'porno', 'kamasutra', 'kamashutra', 
+            'nudity', 'nude', 'naked', 'sensual', 'lust', 'orgasm', 'intercourse',
+            'penis', 'vagina', 'prostitute', 'prostitution', 'whore', 'slut', 'hentai', 'playboy',
+            'vulgar', 'sensuality', 'sexual', 'sexuality', 'erotism',
+            
+            // Indonesian keywords
+            'seks', 'erotis', 'lendir', 'mesum', 'telanjang', 'gairah', 'senggama',
+            'persetubuhan', 'maksiat', 'zina', 'syahwat', 'binal', 'cabul', 'pornografi',
+            
+            // Phrases / Specific markers
+            'novel dewasa', 'cerita dewasa', 'konten dewasa', 'bacaan dewasa', 'khusus dewasa',
+            '18+', '21+', 'adults only', 'adult only', 'for adults'
+        ];
+
+        $title = strtolower($book['title'] ?? '');
+        $synopsis = strtolower($book['synopsis'] ?? '');
+        $author = strtolower($book['author'] ?? '');
+        
+        $categoryName = '';
+        if (isset($book['category']) && is_array($book['category'])) {
+            $categoryName = strtolower($book['category']['name'] ?? '');
+        }
+
+        foreach ($blacklist as $keyword) {
+            if ($keyword === '18+' || $keyword === '21+') {
+                if (str_contains($title, $keyword) || str_contains($synopsis, $keyword)) {
+                    return false;
+                }
+                continue;
+            }
+
+            $pattern = '/\b' . preg_quote($keyword, '/') . '\b/i';
+            
+            if (preg_match($pattern, $title) || 
+                preg_match($pattern, $synopsis) || 
+                preg_match($pattern, $author) || 
+                preg_match($pattern, $categoryName)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
