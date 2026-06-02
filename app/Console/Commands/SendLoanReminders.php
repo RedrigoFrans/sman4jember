@@ -130,10 +130,10 @@ class SendLoanReminders extends Command
 
         $this->line("  [sendNotif] alreadySent={$alreadySent} | member={$member->id} | type={$type} | loan_id=" . ($data['loan_id'] ?? '-'));
 
-        if ($alreadySent) {
-            $this->warn("  ⚠ Notifikasi sudah dikirim hari ini, skip");
-            return;
-        }
+        // if ($alreadySent) {
+        //     $this->warn("  ⚠ Notifikasi sudah dikirim hari ini, skip");
+        //     return;
+        // }
 
         // Simpan notifikasi ke database
         MemberNotification::create([
