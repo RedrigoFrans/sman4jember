@@ -9,4 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 // Kirim reminder pengembalian buku setiap hari jam 07:00
-// Schedule::command('loans:send-reminders')->dailyAt('07:00');
+Schedule::command('loans:send-reminders')->dailyAt('07:00');
