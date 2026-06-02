@@ -55,6 +55,7 @@ class FcmService
                     'body'  => $body,
                 ],
                 'android'      => [
+                    'priority'     => 'high',
                     'notification' => [
                         'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
                         'channel_id'   => 'devora_notifications_v2',
